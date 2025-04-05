@@ -50,6 +50,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Python.step0_create_character_dictionary.executor": "Run",
     "Python.step1_extract_keywords.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "master",
@@ -86,7 +87,7 @@
       <updated>1742961640537</updated>
       <workItem from="1742961641421" duration="10000" />
       <workItem from="1742961686986" duration="7935000" />
-      <workItem from="1743819800087" duration="13145000" />
+      <workItem from="1743819800087" duration="18528000" />
     </task>
     <servers />
   </component>
@@ -94,6 +95,7 @@
     <option name="version" value="3" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/Magic_Touch$step1_extract_keywords.coverage" NAME="step1_extract_keywords Coverage Results" MODIFIED="1743833571136" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
+    <SUITE FILE_PATH="coverage/Magic_Touch$step1_extract_keywords.coverage" NAME="step1_extract_keywords Coverage Results" MODIFIED="1743837048373" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
+    <SUITE FILE_PATH="coverage/Magic_Touch$step0_create_character_dictionary.coverage" NAME="step0_create_character_dictionary Coverage Results" MODIFIED="1743834361553" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
   </component>
 </project>

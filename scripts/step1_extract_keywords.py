@@ -31,8 +31,10 @@ def load_config():
 
 def replace_keywords(sentence, keyword_dict):
     original_sentence = sentence
+    # print(keyword_dict)
     for key, value in keyword_dict.items():
-        sentence = sentence.replace(key, value)
+        if key and value:
+            sentence = sentence.replace(key, f'{key}({value})')
     return sentence, original_sentence
 
 
