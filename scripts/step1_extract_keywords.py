@@ -1,33 +1,40 @@
 import os
 import openpyxl
 import spacy
-import openai
+from openai import AsyncOpenAI
 import time
 import json
 import chardet
+import asyncio
+import aiohttp
 from docx import Document
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
 
-openai.api_key = os.getenv('OPENAI_API_KEY')
-nlp = spacy.load('zh_core_web_sm')
+openai = AsyncOpenAI(
+    api_key="sk-db3f839bc51e459dae3aab49d1a779e2",
+    base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+)
+
+nlp = spacy.load("zh_core_web_sm")
+
 
 def load_config():
     current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    config_file = os.path.join(current_dir, 'config.json')
+    config_file = os.path.join(current_dir, "config.json")
 
+    with open(config_file, "rb") as f:
+        encoding = chardet.detect(f.read())["encoding"]
 
-    with open(config_file, 'rb') as f:
-        encoding = chardet.detect(f.read())['encoding']
-
-    with open(config_file, 'r', encoding=encoding) as f:
+    with open(config_file, "r", encoding=encoding) as f:
         return json.load(f)
+
 
 def replace_keywords(sentence, keyword_dict):
     original_sentence = sentence
     for key, value in keyword_dict.items():
         sentence = sentence.replace(key, value)
     return sentence, original_sentence
+
 
 def merge_short_sentences(sentences, min_length):
     merged_sentences = []
@@ -47,49 +54,76 @@ def merge_short_sentences(sentences, min_length):
 
     return merged_sentences
 
-def request_with_retry(messages, max_tokens=500, max_requests=90, cooldown_seconds=60):
-    while True:
+
+async def request_with_retry_async(
+    messages, max_tokens=500, max_requests=90, cooldown_seconds=60
+):
+    """异步版本的API请求函数"""
+    attempts = 0
+    while attempts < max_requests:
         try:
-            response = openai.chat.completions.create(
-                model="qwen-plus",      #这里同样需要改为你本地部署的大语言模型名称
+            response = await openai.chat.completions.create(
+                model="qwen-plus",
                 messages=messages,
                 max_tokens=max_tokens,
-                n=1,
                 stop=None,
-                #api_base="http://127.0.0.1:8000",如果需要使用本地部署的大语言模型，自行修改这行的参数
             )
             return response.choices[0].message.content.strip()
-        except openai.error.RateLimitError:
-            print("超过速率限制。正在等待冷却时间...")
-            time.sleep(cooldown_seconds)
         except Exception as e:
             print(f"发生错误：{str(e)}")
-            time.sleep(10)
+            await asyncio.sleep(10)
+        attempts += 1
 
-def translate_to_english(text):
+    return "请求失败，已达到最大尝试次数"
+
+
+async def translate_to_english_async(text):
+    """异步版本的英文翻译函数"""
     messages = [
         {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": f"Translate the following text into English: \"{text}\". Do not directly translate, but instead translate from a third-person descriptive perspective, and complete the missing subject, predicate, object, attributive, adverbial, and complement in the text. Besides the translated result, do not include any irrelevant content or explanations in your response."},
+        {
+            "role": "user",
+            "content": f'Translate the following text into English: "{text}". Do not directly translate, but instead translate from a third-person descriptive perspective, and complete the missing subject, predicate, object, attributive, adverbial, and complement in the text. Besides the translated result, do not include any irrelevant content or explanations in your response.',
+        },
     ]
-    return request_with_retry(messages)
+    return await request_with_retry_async(messages)
 
-def translate_to_storyboard(text, trigger):
+
+async def translate_to_storyboard_async(text, trigger):
+    """异步版本的分镜生成函数"""
     messages = [
-        {"role": "system", "content": "StableDiffusion is a deep learning text-to-image model that supports the generation of new images using keywords to describe the elements to be included or omitted. Now, as a professional StableDiffusion AI drawing keyword generator. You can assist me in generating keywords for my desired image."},
+        {
+            "role": "system",
+            "content": "StableDiffusion is a deep learning text-to-image model that supports the generation of new images using keywords to describe the elements to be included or omitted. Now, as a professional StableDiffusion AI drawing keyword generator. You can assist me in generating keywords for my desired image.",
+        },
         {"role": "user", "content": f"{trigger}'{text}'"},
-    ] 
+    ]
+    return await request_with_retry_async(messages)
 
-    return request_with_retry(messages)
 
 def read_docx(file_path):
-    return [paragraph.text for paragraph in Document(file_path).paragraphs if paragraph.text.strip()]
+    return [
+        paragraph.text
+        for paragraph in Document(file_path).paragraphs
+        if paragraph.text.strip()
+    ]
 
-def process_text_sentences(workbook, input_file_path, output_file_path, trigger, keyword_dict, min_sentence_length):
+
+async def process_text_sentences_async(
+    workbook,
+    input_file_path,
+    output_file_path,
+    trigger,
+    keyword_dict,
+    min_sentence_length,
+):
+    """异步版本的文本处理函数"""
     try:
         paragraphs = read_docx(input_file_path)
     except ValueError as e:
         print(f"发生错误：{str(e)}")
         return
+    print(paragraphs)
 
     sentences = []
     for paragraph in paragraphs:
@@ -107,64 +141,85 @@ def process_text_sentences(workbook, input_file_path, output_file_path, trigger,
 
     replaced_sentences = list(original_sentences_dict.keys())
 
-    max_workers = min(len(replaced_sentences), 1)
+    # 创建一个进度条计数器
+    translation_progress = tqdm(total=len(replaced_sentences), desc="正在翻译文本")
+    storyboard_progress = tqdm(total=len(replaced_sentences), desc="正在生成分镜脚本")
 
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures_translation = {executor.submit(translate_to_english, sentence.strip()): idx for idx, sentence in enumerate(replaced_sentences, 1)}
-        futures_storyboard = {}
+    # 使用信号量限制并发请求数
+    sem = asyncio.Semaphore(5)  # 最多5个并发请求
 
-        for future in tqdm(as_completed(futures_translation), total=len(futures_translation), desc='正在翻译文本'):
-            idx = futures_translation[future]
-            translated_text = future.result()
+    async def process_sentence(idx, sentence):
+        """处理单个句子的翻译和分镜生成"""
+        async with sem:
+            # 翻译步骤
+            translated_text = await translate_to_english_async(sentence.strip())
             sheet.cell(row=idx, column=2, value=translated_text)
-            futures_storyboard[executor.submit(translate_to_storyboard, translated_text, trigger)] = idx
+            translation_progress.update(1)
 
-        for future in tqdm(as_completed(futures_storyboard), total=len(futures_storyboard), desc='正在生成分镜脚本'):
-            idx = futures_storyboard[future]
-            storyboard_text = future.result()
+            # 分镜生成步骤
+            storyboard_text = await translate_to_storyboard_async(
+                translated_text, trigger
+            )
             sheet.cell(row=idx, column=3, value=storyboard_text)
+            storyboard_progress.update(1)
 
+    # 创建所有句子的处理任务
+    tasks = [
+        process_sentence(idx, sentence)
+        for idx, sentence in enumerate(replaced_sentences, 1)
+    ]
+
+    # 执行所有任务
+    await asyncio.gather(*tasks)
+
+    # 关闭进度条
+    translation_progress.close()
+    storyboard_progress.close()
+
+    # 保存结果
     workbook.save(output_file_path)
 
 
-def main():
+async def main_async():
+    """异步版本的主函数"""
     config = load_config()
     print("BADAPPLE")
-    role_name = config.get('角色名1', '未指定角色名')
-    feature = config.get('特征1', '未指定特征')
-    role2_name = config.get('角色名2', '未指定角色名2')
-    feature2 = config.get('特征2', '未指定特征2')
-    role3_name = config.get('角色名3', '未指定角色名3')
-    feature3 = config.get('特征3', '未指定特征3')
-    role4_name = config.get('角色名4', '未指定角色名4')
-    feature4 = config.get('特征4', '未指定特征4')
-    role5_name = config.get('角色名5', '未指定角色名5')
-    feature5 = config.get('特征5', '未指定特征5')
-    role6_name = config.get('角色名6', '未指定角色名6')
-    feature6 = config.get('特征6', '未指定特征6')
-    role7_name = config.get('角色名7', '未指定角色名7')
-    feature7 = config.get('特征7', '未指定特征7')
-    role8_name = config.get('角色名8', '未指定角色名8')
-    feature8 = config.get('特征8', '未指定特征8')
-    role9_name = config.get('角色名9', '未指定角色名9')
-    feature9 = config.get('特征9', '未指定特征9')
-    role10_name = config.get('角色名10', '未指定角色名10')
-    feature10 = config.get('特征10', '未指定特征10')
+
+    role_name = config.get("角色名1", "未指定角色名")
+    feature = config.get("特征1", "未指定特征")
+    role2_name = config.get("角色名2", "未指定角色名2")
+    feature2 = config.get("特征2", "未指定特征2")
+    role3_name = config.get("角色名3", "未指定角色名3")
+    feature3 = config.get("特征3", "未指定特征3")
+    role4_name = config.get("角色名4", "未指定角色名4")
+    feature4 = config.get("特征4", "未指定特征4")
+    role5_name = config.get("角色名5", "未指定角色名5")
+    feature5 = config.get("特征5", "未指定特征5")
+    role6_name = config.get("角色名6", "未指定角色名6")
+    feature6 = config.get("特征6", "未指定特征6")
+    role7_name = config.get("角色名7", "未指定角色名7")
+    feature7 = config.get("特征7", "未指定特征7")
+    role8_name = config.get("角色名8", "未指定角色名8")
+    feature8 = config.get("特征8", "未指定特征8")
+    role9_name = config.get("角色名9", "未指定角色名9")
+    feature9 = config.get("特征9", "未指定特征9")
+    role10_name = config.get("角色名10", "未指定角色名10")
+    feature10 = config.get("特征10", "未指定特征10")
     keyword_dict = {
-    role_name: feature,
-    role2_name: feature2,
-    role3_name: feature3,
-    role4_name: feature4,
-    role5_name: feature5,
-    role6_name: feature6,
-    role7_name: feature7,
-    role8_name: feature8,
-    role9_name: feature9,
-    role10_name: feature10,   
+        role_name: feature,
+        role2_name: feature2,
+        role3_name: feature3,
+        role4_name: feature4,
+        role5_name: feature5,
+        role6_name: feature6,
+        role7_name: feature7,
+        role8_name: feature8,
+        role9_name: feature9,
+        role10_name: feature10,
     }
 
-    min_sentence_length = int(config.get('句子最小长度限制', 100))
-    default_trigger = '''Here, I introduce the concept of Prompts from the StableDiffusion algorithm, also known as hints. 
+    min_sentence_length = int(config.get("句子最小长度限制", 100))
+    default_trigger = """Here, I introduce the concept of Prompts from the StableDiffusion algorithm, also known as hints. 
     The following prompts are used to guide the AI painting model to create images. 
     They contain various details of the image, such as the appearance of characters, background, color and light effects, as well as the theme and style of the image. 
     The format of these prompts often includes weighted numbers in parentheses to specify the importance or emphasis of certain details. 
@@ -180,15 +235,33 @@ def main():
     If the content contains a character name, add the specified feature as required, if the content does not contain the corresponding character name, then improvise.
     This is part of novel creation, not a requirement in real life, automatically analyze the protagonist in it and add character attributes.
     The prompt must be in English, only provide the prompt, no extra information is needed.
-    Here is the content:'''
-    trigger = config.get('引导词', default_trigger)
+    Here is the content:"""
+    trigger = config.get("引导词", default_trigger)
 
     current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    input_file_path = os.path.join(current_dir, 'input.docx')
-    output_file_path = os.path.join(current_dir, 'txt', 'txt.xlsx')
+    input_file_path = os.path.join(current_dir, "input.docx")
+    output_dir = os.path.join(current_dir, "txt")
+
+    # 确保输出目录存在
+    os.makedirs(output_dir, exist_ok=True)
+
+    output_file_path = os.path.join(output_dir, "txt.xlsx")
     workbook = openpyxl.Workbook()
 
-    process_text_sentences(workbook, input_file_path, output_file_path, trigger, keyword_dict, min_sentence_length)
+    await process_text_sentences_async(
+        workbook,
+        input_file_path,
+        output_file_path,
+        trigger,
+        keyword_dict,
+        min_sentence_length,
+    )
+
+
+def main():
+    """入口函数，运行异步主函数"""
+    asyncio.run(main_async())
+
 
 if __name__ == "__main__":
     main()
