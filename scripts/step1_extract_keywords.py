@@ -10,9 +10,14 @@ import aiohttp
 from docx import Document
 from tqdm import tqdm
 
+# openai = AsyncOpenAI(
+#     api_key="sk-db3f839bc51e459dae3aab49d1a779e2",
+#     base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+# )
+
 openai = AsyncOpenAI(
-    api_key="sk-db3f839bc51e459dae3aab49d1a779e2",
-    base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+    api_key="sk-cLHG0jRuBeFDE49617b9T3BLBkFJe5b79d2bDefD4Db7b9fa",
+    base_url="https://c-z0-api-01.hash070.com/v1",
 )
 
 nlp = spacy.load("zh_core_web_sm")
@@ -65,7 +70,8 @@ async def request_with_retry_async(
     while attempts < max_requests:
         try:
             response = await openai.chat.completions.create(
-                model="qwen-plus",
+                # model="qwen-plus",
+                model="gpt-4o-mini-2024-07-18",
                 messages=messages,
                 max_tokens=max_tokens,
                 stop=None,
@@ -247,7 +253,7 @@ async def main_async():
     # 确保输出目录存在
     os.makedirs(output_dir, exist_ok=True)
 
-    output_file_path = os.path.join(output_dir, "txt.xlsx")
+    output_file_path = os.path.join(output_dir, "txt2.xlsx")
     workbook = openpyxl.Workbook()
 
     await process_text_sentences_async(

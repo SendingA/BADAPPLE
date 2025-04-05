@@ -27,7 +27,7 @@ def get_prompts(path):
     prompts_file = os.path.join(current_dir, path)
     wb = openpyxl.load_workbook(prompts_file)
     sheet = wb.active
-    prompts = [cell.value for cell in sheet['C'] if cell.value]
+    prompts = [cell.value.strip() for cell in sheet['C'] if cell.value]
     wb.close()
     return prompts
     
@@ -58,20 +58,136 @@ def get_cloud_address():
 
 def run_program(cloud_address, prompts_to_redraw=None, data=None):
     fixed_data = {
-        "alwayson_scripts": {
-            "ADetailer": {
-                "args": [
-                    {"ad_model": "face_yolov8n.pt"},
-                    {"ad_model": "hand_yolov8n.pt"}
-                ]
+            "3": {
+                "inputs": {
+                    "seed": 916314980333824,
+                    "steps": 50,
+                    "cfg": 7,
+                    "sampler_name": "euler",
+                    "scheduler": "normal",
+                    "denoise": 1,
+                    "model": [
+                        "4",
+                        0
+                    ],
+                    "positive": [
+                        "6",
+                        0
+                    ],
+                    "negative": [
+                        "7",
+                        0
+                    ],
+                    "latent_image": [
+                        "5",
+                        0
+                    ]
+                },
+                "class_type": "KSampler",
+                "_meta": {
+                    "title": "K采样器"
+                }
+            },
+            "4": {
+                "inputs": {
+                    "ckpt_name": "sd3.5_large.safetensors"
+                },
+                "class_type": "CheckpointLoaderSimple",
+                "_meta": {
+                    "title": "Checkpoint加载器（简易）"
+                }
+            },
+            "5": {
+                "inputs": {
+                    "width": 1024,
+                    "height": 1024,
+                    "batch_size": 1
+                },
+                "class_type": "EmptyLatentImage",
+                "_meta": {
+                    "title": "空Latent图像"
+                }
+            },
+            "6": {
+                "inputs": {
+                    "text": "Japan Anime: In a lush forest with a carpet of fallen leaves and wild undergrowth, Dragon Haochen, focused and agile, is dressed in simple clothes and skillfully gathers wild vegetables. He carefully collects the vegetables and places them into a small bag. The mood is quiet, determined, and responsible, with natural greens and browns. Soft, diffused sunlight filters through the trees, creating a peaceful and grounded ambiance.",
+                    "clip": [
+                        "10",
+                        0
+                    ]
+                },
+                "class_type": "CLIPTextEncode",
+                "_meta": {
+                    "title": "CLIP文本编码"
+                }
+            },
+            "7": {
+                "inputs": {
+                    "text": "text, error, cropped, worst quality, low quality, normal quality, signature, watermark, username, blurry, artist name, monochrome, sketch, censorship, censor, extra legs, extra hands, (forehead mark) (depth of field) (emotionless) (penis)",
+                    "clip": [
+                        "10",
+                        0
+                    ]
+                },
+                "class_type": "CLIPTextEncode",
+                "_meta": {
+                    "title": "CLIP文本编码"
+                }
+            },
+            "8": {
+                "inputs": {
+                    "samples": [
+                        "3",
+                        0
+                    ],
+                    "vae": [
+                        "4",
+                        2
+                    ]
+                },
+                "class_type": "VAEDecode",
+                "_meta": {
+                    "title": "VAE解码"
+                }
+            },
+            "9": {
+                "inputs": {
+                    "filename_prefix": "ComfyUI",
+                    "images": [
+                        "8",
+                        0
+                    ]
+                },
+                "class_type": "SaveImage",
+                "_meta": {
+                    "title": "保存图像"
+                }
+            },
+            "10": {
+                "inputs": {
+                    "clip_name1": "clip_g.safetensors",
+                    "clip_name2": "clip_l.safetensors",
+                    "clip_name3": "t5xxl_fp16.safetensors"
+                },
+                "class_type": "TripleCLIPLoader",
+                "_meta": {
+                    "title": "三重CLIP加载器"
+                }
             }
         }
-    }
 
-    if data:
-        fixed_data.update(data)
+        # "alwayson_scripts": {
+        #     "ADetailer": {
+        #         "args": [
+        #             {"ad_model": "face_yolov8n.pt"},
+        #             {"ad_model": "hand_yolov8n.pt"}
+        #         ]
+        #     }
+        # }
 
-    url = cloud_address.rstrip('/') + '/prompt' if cloud_address else ""
+
+
+    url = cloud_address.rstrip('/') + '/api/prompt' if cloud_address else ""
 
     if not url:
         print("未提供云端Stable Diffusion地址")
@@ -90,13 +206,12 @@ def run_program(cloud_address, prompts_to_redraw=None, data=None):
     existing_files = set(os.listdir(image_dir))
 
     for i, prompt_b in tqdm(prompts_to_process, desc='绘图进度', unit='image'):
-        prompt = f"{prompt_b},{more_details}"
-
+        prompt = fixed_data.copy()
+        prompt['6']['inputs']['text'] = f"{prompt_b},{more_details}"
         output_file = f'output_{i+1}.png'
         if output_file in existing_files and prompts_to_redraw is None:
             continue
-        fixed_data["prompt"] = prompt
-        response = post(url, fixed_data)
+        response = post(url, {"prompt": prompt})
         if response.status_code == 200:
             save_img(response.json()['images'][0], os.path.join(image_dir, output_file))
             temp_dir = os.path.join(current_dir, 'temp')

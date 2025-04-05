@@ -8,6 +8,8 @@ import io
 import random
 import urllib.request
 import urllib.parse
+from distutils.command.config import config
+
 import websocket  # pip install websocket-client
 import openpyxl
 import chardet
@@ -212,7 +214,7 @@ def run_comfyui_program(prompts_to_redraw: Optional[list[int]] = None, extra_dat
     若 prompts_to_redraw 为 None，则处理所有提示；否则仅处理指定下标的提示（下标从 0 开始）。
     extra_data 中可包含额外的 workflow 参数，会 merge 到 build_workflow 的参数中。
     """
-    prompts = get_prompts(os.path.join('txt', 'txt.xlsx'))
+    prompts = get_prompts(os.path.join('txt', 'txt2.xlsx'))
     image_dir = os.path.join(current_dir, 'image')
     os.makedirs(image_dir, exist_ok=True)
 
@@ -229,7 +231,7 @@ def run_comfyui_program(prompts_to_redraw: Optional[list[int]] = None, extra_dat
         "height": 1024,
         "cfg": 7.0,
         "sampler_name": "euler",
-        "steps": 50,
+        "steps": 100,
         "model_name": "sd3.5_large.safetensors",
         "clip_name1": "clip_g.safetensors",
         "clip_name2": "clip_l.safetensors",
@@ -242,10 +244,16 @@ def run_comfyui_program(prompts_to_redraw: Optional[list[int]] = None, extra_dat
     }
     default_params.update(extra_data)
 
+    with open("../config.json", "r", encoding="utf-8") as f:
+        config = json.load(f)
+
+
+
     for i, prompt_text in tqdm(prompts_to_process, desc='绘图进度', unit='image'):
         # 直接使用 Excel 中的提示作为正面提示，负面提示为空
-        positive_prompt = prompt_text
-        negative_prompt = "text, error, cropped, worst quality, low quality, normal quality, signature, watermark, username, blurry, artist name, monochrome, sketch, censorship, censor, extra legs, extra hands, (forehead mark) (depth of field) (emotionless) (penis)"
+        more_details = config.get("more_details")
+        positive_prompt = f"{prompt_text},{more_details}"
+        negative_prompt = config.get("negative_prompt")
 
         output_file = f'output_{i+1}.png'
         if output_file in existing_files and prompts_to_redraw is None:

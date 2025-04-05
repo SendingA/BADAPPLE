@@ -19,7 +19,7 @@ class SpeechProvider:
 
         self.SAMPLE_RATE = 24000
         # How much silence to insert between paragraphs: 5000 is about 0.2 seconds
-        self.N_ZEROS = 10000 
+        self.N_ZEROS = 5000
         # VOICES = glob.glob(f"./voice/Kokoro-82M-v1.1-zh/voices/{GENDER}*.pt")
         self.VOICE = kororo_path + '/voices/zf_003.pt' if gender == 'zf' else kororo_path + '/voices/zm_031.pt'
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -37,11 +37,11 @@ class SpeechProvider:
         return next(self.en_pipeline(text)).phonemes
 
     def speed_callable(self,len_ps):
-        speed = 0.6
+        speed = 0.8
         if len_ps <= 100:
-            speed = 0.8
+            speed = 1
         elif len_ps < 200:
-            speed = 1 - (len_ps - 83) / 500
+            speed = 1 - (len_ps - 100) / 500
         return speed * 1.1
 
     def get_tts_audio(self, message):
