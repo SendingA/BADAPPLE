@@ -72,9 +72,8 @@ class SpeechProvider:
                 print(f"序号 {index} 的语音合成出错，错误信息：{str(e)}，正在进行下一次尝试...")
 
 async def process_text_files(input_file, output_dir, language):
-    print("软件作者：西装革律")
-    print("禁止倒卖，违者必究！")
-    print("交流群：797579852")
+    print("BADAPPLE")
+
 
     wb = openpyxl.load_workbook(input_file)
     sheet = wb.active

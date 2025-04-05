@@ -111,9 +111,7 @@ def run_program(cloud_address, prompts_to_redraw=None, data=None):
             break
 
 if __name__ == '__main__':
-    print("软件作者：西装革律")
-    print("禁止倒卖，违者必究！")
-    print("交流群：797579852")
+    print("BADAPPLE")
 
     cloud_address, more_details, data = get_cloud_address()
 

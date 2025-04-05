@@ -46,9 +46,8 @@ def transform_image(img, t, x_speed, y_speed, move_on_x, move_positive):
     
     return cropped_img.resize(original_size)
 
-print("软件作者：西装革律")
-print("禁止倒卖，违者必究！")
-print("交流群：797579852")
+
+print("BADAPPLE")
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)

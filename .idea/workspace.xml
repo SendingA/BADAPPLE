@@ -10,12 +10,27 @@
       <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/step0_create_character_dictionary.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/config.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/input.docx" beforeDir="false" afterPath="$PROJECT_DIR$/input.docx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/step1_extract_keywords.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step1_extract_keywords.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/step2_txt_to_image_high.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step2_txt_to_image_high.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/step2_txt_to_image_low.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step2_txt_to_image_low.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/step3_txt_to_voice.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step3_txt_to_voice.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/step3_txt_to_voice_free.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step3_txt_to_voice_free.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/step4_output_video.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step4_output_video.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Jupyter Notebook" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -28,18 +43,19 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "master",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -58,7 +74,7 @@
       <updated>1742961640537</updated>
       <workItem from="1742961641421" duration="10000" />
       <workItem from="1742961686986" duration="7935000" />
-      <workItem from="1743819800087" duration="1007000" />
+      <workItem from="1743819800087" duration="8054000" />
     </task>
     <servers />
   </component>
