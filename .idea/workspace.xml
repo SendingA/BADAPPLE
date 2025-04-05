@@ -9,6 +9,8 @@
       <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/input.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/step0_create_character_dictionary.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/input.docx" beforeDir="false" afterPath="$PROJECT_DIR$/input.docx" afterDir="false" />
@@ -31,6 +33,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Jupyter Notebook" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>
@@ -83,7 +86,7 @@
       <updated>1742961640537</updated>
       <workItem from="1742961641421" duration="10000" />
       <workItem from="1742961686986" duration="7935000" />
-      <workItem from="1743819800087" duration="12483000" />
+      <workItem from="1743819800087" duration="13145000" />
     </task>
     <servers />
   </component>
