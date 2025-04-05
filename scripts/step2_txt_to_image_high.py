@@ -1,154 +1,299 @@
-import os
 import json
-import base64
-import requests
-import openpyxl
-from requests.adapters import HTTPAdapter
-from urllib3.util import Retry
-import chardet
-from tqdm import tqdm
+import uuid
+import io
+import random
+import urllib.request
+import urllib.parse
+import websocket  # pip install websocket-client
+from PIL import Image
+from typing import Any, Optional
+import logging
 
-session = requests.Session()
-retries = Retry(total=5, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
-adapter = HTTPAdapter(max_retries=retries)
-session.mount('http://', adapter)
-session.mount('https://', adapter)
+# 设置调试模式（修改 DEBUG 为 False 可关闭调试日志）
+DEBUG: bool = True
 
-current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if DEBUG:
+    logging.basicConfig(level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s")
+else:
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
-def post(url, data):
-    return session.post(url, json=data)
+# 全局配置（请根据实际情况修改）
+SERVER_ADDRESS: str = "127.0.0.1:8188"
+CLIENT_ID: str = str(uuid.uuid4())
 
-def save_img(b64_image, path):
-    with open(path, "wb") as file:
-        file.write(base64.b64decode(b64_image))
+def enqueue_workflow(workflow: dict[str, Any]) -> dict[str, Any]:
+    """
+    将给定的 ComfyUI workflow 发送至 /prompt 接口，并返回服务器响应。
 
-def get_prompts(path):
-    prompts_file = os.path.join(current_dir, path)
-    wb = openpyxl.load_workbook(prompts_file)
-    sheet = wb.active
-    prompts = [cell.value for cell in sheet['C'] if cell.value]
-    wb.close()
-    return prompts
-    
-def get_cloud_address():
-    config_file = os.path.join(current_dir, 'config.json')
-    cloud_address = None
-    more_details = None
-    data = None
+    :param workflow: ComfyUI workflow 字典
+    :return: 服务器返回的 JSON 数据（通常包含 prompt_id）
+    """
+    data = json.dumps({"prompt": workflow, "client_id": CLIENT_ID}).encode("utf-8")
+    req = urllib.request.Request(f"http://{SERVER_ADDRESS}/prompt", data=data)
+    with urllib.request.urlopen(req) as resp:
+        return json.loads(resp.read())
 
-    if os.path.exists(config_file):
-        with open(config_file, 'rb') as f:
-            raw_data = f.read()
-            detected_encoding = chardet.detect(raw_data)['encoding']
-        with open(config_file, 'r', encoding=detected_encoding) as f:
-            config = json.load(f)
-            cloud_address = config.get('cloud_address')
-            more_details = config.get('more_details')
-            data = config.get('data')
+def fetch_image_data(filename: str, subfolder: str, folder_type: str) -> bytes:
+    """
+    通过 HTTP GET 请求从服务器获取图像二进制数据。
 
-    if not cloud_address:
-        cloud_address = None
-    if more_details is None:
-        more_details = {}
-    if data is None:
-        data = {}
+    :param filename: 服务器保存的文件名
+    :param subfolder: 图像所在的子文件夹
+    :param folder_type: 文件类型（例如 "output"）
+    :return: 图像的二进制数据
+    """
+    params = {
+        "filename": filename,
+        "subfolder": subfolder,
+        "type": folder_type
+    }
+    url_params = urllib.parse.urlencode(params)
+    url = f"http://{SERVER_ADDRESS}/view?{url_params}"
+    with urllib.request.urlopen(url) as response:
+        return response.read()
 
-    return cloud_address, more_details, data
+def fetch_execution_history(prompt_id: str) -> dict[str, Any]:
+    """
+    获取指定 prompt_id 的执行历史记录。
 
-def run_program(cloud_address, prompts_to_redraw=None, data=None):
-    fixed_data = {
-        "alwayson_scripts": {
-            "ADetailer": {
-                "args": [
-                    {"ad_model": "face_yolov8n.pt"},
-                    {"ad_model": "hand_yolov8n.pt"}
-                ]
-            }
+    :param prompt_id: ComfyUI 分配的提示 ID
+    :return: 执行历史的 JSON 数据
+    """
+    url = f"http://{SERVER_ADDRESS}/history/{prompt_id}"
+    with urllib.request.urlopen(url) as response:
+        return json.loads(response.read())
+
+def collect_generated_images(ws: websocket.WebSocket, workflow: dict[str, Any]) -> dict[str, bytes]:
+    """
+    通过 WebSocket 执行 workflow，并监听返回消息，
+    当检测到 SaveImage 节点执行完成后，通过 HTTP 获取生成的图像数据。
+
+    :param ws: 已连接的 WebSocket 对象
+    :param workflow: ComfyUI workflow 字典
+    :return: {filename: image_bytes} 的字典
+    """
+    response = enqueue_workflow(workflow)
+    prompt_id: str = response["prompt_id"]
+
+    image_metadata = None
+
+    while True:
+        raw_message = ws.recv()
+        if isinstance(raw_message, str):
+            message = json.loads(raw_message)
+            if DEBUG:
+                logging.debug("Msg: %s", message)
+
+            if message.get("type") == "executed" and message["data"].get("prompt_id") == prompt_id:
+                # 判断节点标识，可以根据返回的节点号或名称来匹配
+                if message["data"].get("node") in ["SaveImage", "9"]:
+                    image_metadata = message["data"]["output"].get("images")
+
+            # 当检测到执行结束（node 为 None）时退出循环
+            if message.get("type") == "executing" and message["data"].get("node") is None:
+                break
+        else:
+            # 如果服务器发送二进制消息（目前不适用），可在此处理
+            pass
+
+    images: dict[str, bytes] = {}
+    if image_metadata:
+        for img_info in image_metadata:
+            filename = img_info.get("filename", "")
+            subfolder = img_info.get("subfolder", "")
+            folder_type = img_info.get("type", "")
+            img_bytes = fetch_image_data(filename, subfolder, folder_type)
+            images[filename] = img_bytes
+
+    return images
+
+def build_workflow(
+    positive_prompt: str,
+    negative_prompt: str,
+    width: int,
+    height: int,
+    cfg: float,
+    sampler_name: str,
+    steps: int,
+    model_name: str,
+    clip_name1: str,
+    clip_name2: str,
+    clip_name3: str,
+    seed: Optional[int] = None,
+    seed_behavior: str = "randomize",
+    scheduler: str = "normal",
+    denoise: float = 1.0,
+    batch_size: int = 1
+) -> dict[str, Any]:
+    """
+    根据参数生成适用于 ComfyUI 的 workflow 字典。
+
+    :param positive_prompt: 正面提示词
+    :param negative_prompt: 负面提示词
+    :param width: 图像宽度
+    :param height: 图像高度
+    :param cfg: CFG scale
+    :param sampler_name: 采样器名称（例如 "euler"）
+    :param steps: 采样步数
+    :param model_name: 检查点文件名 (ckpt_name)
+    :param clip_name1: 第一个 CLIP 模型名称
+    :param clip_name2: 第二个 CLIP 模型名称
+    :param clip_name3: 第三个 CLIP 模型名称
+    :param seed: 随机种子；若为 None，则自动生成
+    :param seed_behavior: 生成后控制 ("randomize" / "keep" / "iter" 等)
+    :param scheduler: 调度器 ("normal", "ddim", "karras" 等)
+    :param denoise: 降噪强度
+    :param batch_size: 生成图像的批量大小
+    :return: ComfyUI workflow 字典
+    """
+    if seed is None:
+        seed = random.randint(0, 2**31 - 1)
+
+    return {
+        "3": {
+            "inputs": {
+                "seed": seed,
+                "seed_behavior": seed_behavior,   # 生成后控制
+                "steps": steps,
+                "cfg": cfg,
+                "sampler_name": sampler_name,
+                "scheduler": scheduler,           # 调度器
+                "denoise": denoise,               # 降噪
+                "model": ["4", 0],
+                "positive": ["6", 0],
+                "negative": ["7", 0],
+                "latent_image": ["5", 0]
+            },
+            "class_type": "KSampler",
+            "_meta": {"title": "K采样器"}
+        },
+        "4": {
+            "inputs": {"ckpt_name": model_name},
+            "class_type": "CheckpointLoaderSimple",
+            "_meta": {"title": "Checkpoint加载器（简易）"}
+        },
+        "5": {
+            "inputs": {"width": width, "height": height, "batch_size": batch_size},
+            "class_type": "EmptyLatentImage",
+            "_meta": {"title": "空Latent图像"}
+        },
+        "6": {
+            "inputs": {"text": positive_prompt, "clip": ["10", 0]},
+            "class_type": "CLIPTextEncode",
+            "_meta": {"title": "CLIP文本编码"}
+        },
+        "7": {
+            "inputs": {"text": negative_prompt, "clip": ["10", 0]},
+            "class_type": "CLIPTextEncode",
+            "_meta": {"title": "CLIP文本编码"}
+        },
+        "8": {
+            "inputs": {"samples": ["3", 0], "vae": ["4", 2]},
+            "class_type": "VAEDecode",
+            "_meta": {"title": "VAE解码"}
+        },
+        "9": {
+            "inputs": {"filename_prefix": "ComfyUI", "images": ["8", 0]},
+            "class_type": "SaveImage",
+            "_meta": {"title": "保存图像"}
+        },
+        "10": {
+            "inputs": {"clip_name1": clip_name1, "clip_name2": clip_name2, "clip_name3": clip_name3},
+            "class_type": "TripleCLIPLoader",
+            "_meta": {"title": "三重CLIP加载器"}
         }
     }
 
-    if data:
-        fixed_data.update(data)
+def execute_comfyui_pipeline(
+    positive_prompt: str,
+    negative_prompt: str,
+    width: int,
+    height: int,
+    cfg: float,
+    sampler_name: str,
+    steps: int,
+    model_name: str = "sd3.5_large.safetensors",
+    clip_name1: str = "clip_g.safetensors",
+    clip_name2: str = "clip_l.safetensors",
+    clip_name3: str = "t5xxl_fp16.safetensors",
+    seed: Optional[int] = None,
+    seed_behavior: str = "randomize",
+    scheduler: str = "normal",
+    denoise: float = 1.0,
+    batch_size: int = 1
+) -> None:
+    """
+    执行 ComfyUI workflow 流程，根据传入参数生成图像，并以 PNG 格式保存。
 
-    url = cloud_address.rstrip('/') + '/sdapi/v1/txt2img' if cloud_address else ""
+    :param positive_prompt: 正面提示词
+    :param negative_prompt: 负面提示词
+    :param width: 图像宽度
+    :param height: 图像高度
+    :param cfg: CFG scale
+    :param sampler_name: 采样器名称
+    :param steps: 采样步数
+    :param model_name: 模型名称（检查点）
+    :param clip_name1: 第一个 CLIP 模型名称
+    :param clip_name2: 第二个 CLIP 模型名称
+    :param clip_name3: 第三个 CLIP 模型名称
+    :param seed: 随机种子；若为 None，则自动生成
+    :param seed_behavior: 生成后控制选项 ("randomize"/"keep"/"iter"等)
+    :param scheduler: 调度器 ("normal", "karras", "ddim"等)
+    :param denoise: 降噪强度
+    :param batch_size: 批量生成数量
+    """
+    workflow: dict[str, Any] = build_workflow(
+        positive_prompt=positive_prompt,
+        negative_prompt=negative_prompt,
+        width=width,
+        height=height,
+        cfg=cfg,
+        sampler_name=sampler_name,
+        steps=steps,
+        model_name=model_name,
+        clip_name1=clip_name1,
+        clip_name2=clip_name2,
+        clip_name3=clip_name3,
+        seed=seed,
+        seed_behavior=seed_behavior,
+        scheduler=scheduler,
+        denoise=denoise,
+        batch_size=batch_size
+    )
+    ws = websocket.WebSocket()
+    ws.connect(f"ws://{SERVER_ADDRESS}/ws?clientId={CLIENT_ID}")
+    generated_images: dict[str, bytes] = collect_generated_images(ws, workflow)
+    ws.close()
+    for filename, image_data in generated_images.items():
+        image = Image.open(io.BytesIO(image_data))
+        image.save(filename, "PNG")
+        print(f"Saved image to: {filename}")
 
-    if not url:
-        print("未提供云端Stable Diffusion地址")
-        return
 
-    prompts = get_prompts(os.path.join('txt', 'txt.xlsx'))
-
-    image_dir = os.path.join(current_dir, 'image')
-    os.makedirs(image_dir, exist_ok=True)
-
-    prompts_to_process = list(enumerate(prompts))
-    if prompts_to_redraw is not None:
-        prompts_to_process = [(i, prompt) for i, prompt in prompts_to_process if i in prompts_to_redraw]
-
-    total_images = len(prompts_to_process)
-    existing_files = set(os.listdir(image_dir))
-
-    for i, prompt_b in tqdm(prompts_to_process, desc='绘图进度', unit='image'):
-        prompt = f"{prompt_b},{more_details}"
-
-        output_file = f'output_{i+1}.png'
-        if output_file in existing_files and prompts_to_redraw is None:
-            continue
-        fixed_data["prompt"] = prompt
-        response = post(url, fixed_data)
-        if response.status_code == 200:
-            save_img(response.json()['images'][0], os.path.join(image_dir, output_file))
-            temp_dir = os.path.join(current_dir, 'temp')
-            os.makedirs(temp_dir, exist_ok=True)
-            with open(os.path.join(temp_dir, 'params.json'), 'a') as f:
-                json.dump({output_file: fixed_data}, f)
-                f.write('\n')
-        else:
-            print(f'错误：{response.status_code}')
-
-        if not prompt_b:
-            break
-
-if __name__ == '__main__':
-    print("BADAPPLE")
-
-    cloud_address, more_details, data = get_cloud_address()
-
-    if cloud_address is None:
-        cloud_address = "http://127.0.0.1:7860"
-        print("使用本地Stable Diffusion")
-    else:
-        print("使用云端Stable Diffusion")
-
-    print("Stable Diffusion正在绘图，请稍后...")
-    run_program(cloud_address, data=data)
-    print("Stable Diffusion绘图完成，请检查图片，不想踩缝纫机就赶紧把小黄图删了~")
-
-    while True:
-        user_input = input("请输入需要重绘的图片对应的数字（多个数字用空格隔开，输入N退出程序）: ")
-        if user_input == "N":
-            break
-
-        file_numbers_to_redraw = []
-        for s in user_input.split():
-            try:
-                file_number = int(s.strip()) - 1
-                file_name = f"output_{file_number+1}.png"
-                file_path = os.path.join('image', file_name)
-
-                if os.path.exists(os.path.join(current_dir, file_path)):
-                    file_numbers_to_redraw.append(file_number)
-                    os.remove(os.path.join(current_dir, file_path))
-                    print(f"重绘图片: {file_name}")
-                else:
-                    print(f"无效图片: {file_name}")
-            except ValueError:
-                print(f"无效输入: {s.strip()}，跳过")
-
-        if file_numbers_to_redraw:
-            print("Stable Diffusion正在重绘，请稍后...")
-            run_program(cloud_address, prompts_to_redraw=file_numbers_to_redraw, data=data)
-            print("Stable Diffusion重绘完成，请检查图片，你确定还不删小黄图么？")
-        else:
-            print("没有需要重绘的图片")
+if __name__ == "__main__":
+    execute_comfyui_pipeline(
+        positive_prompt=(
+            """
+            Japan Anime: In a lush forest with a carpet of fallen leaves and wild undergrowth, Dragon Haochen, focused and agile, is dressed in simple clothes and skillfully gathers wild vegetables. He carefully collects the vegetables and places them into a small bag. The mood is quiet, determined, and responsible, with natural greens and browns. Soft, diffused sunlight filters through the trees, creating a peaceful and grounded ambiance.
+            """
+        ),
+        negative_prompt=(
+            """
+            text, error, cropped, worst quality, low quality, normal quality, signature, watermark, username, blurry, artist name, monochrome, sketch, censorship, censor, extra legs, extra hands, (forehead mark) (depth of field) (emotionless) (penis)
+            """
+        ),
+        width=1024,
+        height=1024,
+        cfg=7.0,
+        sampler_name="euler",
+        steps=50,
+        model_name="sd3.5_large.safetensors",
+        clip_name1="clip_g.safetensors",
+        clip_name2="clip_l.safetensors",
+        clip_name3="t5xxl_fp16.safetensors",
+        seed=916314980336220,
+        seed_behavior="randomize",
+        scheduler="normal",
+        denoise=1.0,
+        batch_size=1
+    )
