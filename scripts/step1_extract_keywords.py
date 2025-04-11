@@ -32,6 +32,25 @@ def load_config():
     with open(config_file, "r", encoding=encoding) as f:
         return json.load(f)
 
+def replace_character(text,character_dict):
+    system_prompt = (
+        "你将收到一段文本，以及一个包含角色名称与其特征的映射字典。"
+        "请识别文本中出现的所有角色名称，以及对这些角色的指代（如代词或描述性名词），"
+        "并将它们统一替换为字典中对应的角色名称。"
+        "请确保语义连贯、上下文合理，避免遗漏或误替换。"
+    )
+
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {
+            "role": "user",
+            "content": text
+        },
+    ]
+    return  request_with_retry_async(messages)
+
+
+
 
 def replace_keywords(sentence, keyword_dict):
     original_sentence = sentence
