@@ -285,8 +285,9 @@ def run_comfyui_program(
         
         while style_score < style_threshold:
             print("Painting:", i + 1, ':', style_score, style_threshold)
+            positive_prompt=f"{more_details},{positive_prompt}"
             workflow = build_workflow(
-                positive_prompt=f"{more_details},{positive_prompt}",
+                positive_prompt=positive_prompt,
                 negative_prompt=negative_prompt,
                 width=default_params["width"],
                 height=default_params["height"],
