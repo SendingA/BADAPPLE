@@ -292,14 +292,14 @@ def run_comfyui_program(
             ws.close()
             return generated_images
 
-        style_threshold = 0.3 # init threshold for style compliance
-        style_score = 0
-        while style_score < style_threshold:
+        style_threshold = 40    # init threshold for style compliance
+        alpha = 0.25            # set the speed of tolerate
+        style_score = 100
+        
+        while style_score > style_threshold:
             generated_images = generate(workflow)
-            
             if generated_images:
                 assert len(generated_images) == 1 # suppose we only generate 1 pic a time
-                
                 fname, img_data = generated_images[0]
                 style_score = clip_score(
                     img_data,
@@ -307,18 +307,22 @@ def run_comfyui_program(
                 )
                 
                 if style_score < style_threshold:
-                    style_threshold = (style_score + style_threshold) / 2
+                    style_threshold = style_threshold + (style_score - style_score) * alpha
                     print(f"{output_file}: Repaint for better style alignment...")
                     continue
                 
                 print(f"{output_file}: Pass with style score {style_score}!")
                 save_path = os.path.join(image_dir, output_file)
+                
                 with open(save_path, "wb") as f:
                     f.write(img_data)
+                
                 logging.info("Saved image to: %s", save_path)
+                
                 # 保存绘图参数
                 temp_dir = os.path.join(current_dir, 'temp')
                 os.makedirs(temp_dir, exist_ok=True)
+                
                 with open(os.path.join(temp_dir, 'params.json'), 'a', encoding="utf-8") as f:
                     json.dump({output_file: workflow}, f, ensure_ascii=False)
                     f.write('\n')
