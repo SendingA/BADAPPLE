@@ -238,8 +238,10 @@ def run_comfyui_program(
 
     # 默认绘图参数
     default_params = {
-        "width": 1024,
-        "height": 1024,
+        # "width": 1024,
+        # "height": 1024,
+        "width": 512,
+        "height": 512,
         "cfg": 7.0,
         "sampler_name": "euler",
         "steps": 100,
