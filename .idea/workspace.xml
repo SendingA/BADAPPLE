@@ -4,13 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f03d818a-e448-4dd8-bdd6-87cbd7444de2" name="Changes" comment="">
+    <list default="true" id="f03d818a-e448-4dd8-bdd6-87cbd7444de2" name="Changes" comment="replace characters">
+      <change afterPath="$PROJECT_DIR$/scripts/step1.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/step0_create_character_dictionary.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step0_create_character_dictionary.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/step0_create_character_dictionary.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step0_create_character_dictionary.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/step1_extract_keywords.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step1_extract_keywords.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/角色信息.json" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/角色信息.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/场景分割.json" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/场景分割.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/txt/txt.csv" beforeDir="false" afterPath="$PROJECT_DIR$/txt/txt.csv" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -20,14 +21,26 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Jupyter Notebook" />
         <option value="Python Script" />
+        <option value="Jupyter Notebook" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "SendingA"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/SendingA/BADAPPLE.git",
+    "accountId": "5b9350e3-7048-4815-9dfe-80e919ea7f4b"
+  }
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 7
 }</component>
@@ -83,8 +96,17 @@
       <workItem from="1743819800087" duration="36935000" />
       <workItem from="1744019621236" duration="898000" />
       <workItem from="1744102263650" duration="9854000" />
-      <workItem from="1744375376465" duration="10570000" />
+      <workItem from="1744375376465" duration="15321000" />
     </task>
+    <task id="LOCAL-00001" summary="replace characters">
+      <option name="closed" value="true" />
+      <created>1744386852001</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1744386852001</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -95,19 +117,35 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="master" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>
     </option>
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="replace characters" />
+    <option name="LAST_COMMIT_MESSAGE" value="replace characters" />
+  </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Magic_Touch$step2_txt_to_image_high_bak.coverage" NAME="step2_txt_to_image_high_bak Coverage Results" MODIFIED="1743843223577" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
-    <SUITE FILE_PATH="coverage/Magic_Touch$step1_extract_keywords.coverage" NAME="step1_extract_keywords Coverage Results" MODIFIED="1743849220286" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
+    <SUITE FILE_PATH="coverage/Magic_Touch$step1_extract_keywords.coverage" NAME="step1_extract_keywords Coverage Results" MODIFIED="1744390904610" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/Magic_Touch$download.coverage" NAME="download Coverage Results" MODIFIED="1743861616635" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Magic_Touch$step2_txt_to_image_high.coverage" NAME="step2_txt_to_image_high Coverage Results" MODIFIED="1743856920582" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/Magic_Touch$step3_txt_to_voice_kokoro.coverage" NAME="step3_txt_to_voice_kokoro Coverage Results" MODIFIED="1743862270089" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
-    <SUITE FILE_PATH="coverage/Magic_Touch$step0_create_character_dictionary.coverage" NAME="step0_create_character_dictionary Coverage Results" MODIFIED="1744381134348" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
+    <SUITE FILE_PATH="coverage/Magic_Touch$step0_create_character_dictionary.coverage" NAME="step0_create_character_dictionary Coverage Results" MODIFIED="1744387493790" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/Magic_Touch$step4_output_video.coverage" NAME="step4_output_video Coverage Results" MODIFIED="1744104701381" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
   </component>
 </project>

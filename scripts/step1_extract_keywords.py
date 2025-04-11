@@ -8,16 +8,17 @@ import chardet
 import asyncio
 from docx import Document
 from tqdm import tqdm
-
-# openai = AsyncOpenAI(
-#     api_key="sk-db3f839bc51e459dae3aab49d1a779e2",
-#     base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
-# )
+import pandas
 
 openai = AsyncOpenAI(
-    api_key="sk-cLHG0jRuBeFDE49617b9T3BLBkFJe5b79d2bDefD4Db7b9fa",
-    base_url="https://c-z0-api-01.hash070.com/v1",
+    api_key="sk-db3f839bc51e459dae3aab49d1a779e2",
+    base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
 )
+
+# openai = AsyncOpenAI(
+#     api_key="sk-cLHG0jRuBeFDE49617b9T3BLBkFJe5b79d2bDefD4Db7b9fa",
+#     base_url="https://c-z0-api-01.hash070.com/v1",
+# )
 
 nlp = spacy.load("zh_core_web_sm")
 
@@ -32,24 +33,31 @@ def load_config():
     with open(config_file, "r", encoding=encoding) as f:
         return json.load(f)
 
-def replace_character(text,character_dict):
+async def replace_character(scenarios, character_dict):
     system_prompt = (
         "你将收到一段文本，以及一个包含角色名称与其特征的映射字典。"
-        "请识别文本中出现的所有角色名称，以及对这些角色的指代（如代词或描述性名词），"
-        "并将它们统一替换为字典中对应的角色名称。"
-        "请确保语义连贯、上下文合理，避免遗漏或误替换。"
+        "请识别文本中所有出现的角色名称，以及指代这些角色的代词、描述性名词、外貌称呼或亲属关系描述。"
+        "请统一将这些指代或称呼替换为字典中定义的标准角色名称，保持上下文一致，避免遗漏或误替换，并与原文的格式保持一致，在替代的时候不要出现无关的符号。"
+        "如果同一角色在不同阶段（如童年、成年）被赋予不同称呼，请根据上下文推理，并统一替换为同一个角色名。"
+        "对于包含亲属关系的表达（如“某某的母亲”、“她的父亲”），请结合上下文，明确识别‘某某’指的是谁，"
+        "再在字典中查找其母亲（或父亲）是谁，并替换为该角色的标准名称。"
+        "例如，如果“白雪公主（儿童）”和“王后（白雪公主生母）”都出现在字典中，且提到“白雪公主（美少女）的母亲”，"
+        "应识别出“白雪公主（美少女）”与“白雪公主（儿童）”为同一人，其母亲即“王后（白雪公主生母）”，应替换为后者。"
+        "保持文本原有格式和结构，不要添加、修改或省略任何内容，也不要输出 prompt 以外的任何信息。"
     )
+
+    scenario_text = "\n".join(scenarios["Chinese Content"].tolist())
 
     messages = [
         {"role": "system", "content": system_prompt},
         {
             "role": "user",
-            "content": text
+            "content": f'角色名称与其特征的映射字典如下：{character_dict}\n\n文本如下：{scenario_text}'
         },
     ]
-    return  request_with_retry_async(messages)
 
-
+    resp = await request_with_retry_async(messages)
+    return [row.strip() for row in resp.split("\n") if row.strip()]
 
 
 def replace_keywords(sentence, keyword_dict):
@@ -81,18 +89,16 @@ def merge_short_sentences(sentences, min_length):
 
 
 async def request_with_retry_async(
-    messages, max_tokens=500, max_requests=90, cooldown_seconds=60
+    messages, max_requests=90, cooldown_seconds=60
 ):
     """异步版本的API请求函数"""
     attempts = 0
     while attempts < max_requests:
         try:
             response = await openai.chat.completions.create(
-                # model="qwen-plus",
-                model="gpt-4o-mini-2024-07-18",
+                model="qwen-plus",
+                # model="gpt-4o-mini-2024-07-18",
                 messages=messages,
-                max_tokens=max_tokens,
-                stop=None,
             )
             return response.choices[0].message.content.strip()
         except Exception as e:
@@ -274,14 +280,24 @@ async def main_async():
     output_file_path = os.path.join(output_dir, "txt2.xlsx")
     workbook = openpyxl.Workbook()
 
-    await process_text_sentences_async(
-        workbook,
-        input_file_path,
-        output_file_path,
-        trigger,
-        keyword_dict,
-        min_sentence_length,
+    # await process_text_sentences_async(
+    #     workbook,
+    #     input_file_path,
+    #     output_file_path,
+    #     trigger,
+    #     keyword_dict,
+    #     min_sentence_length,
+    # )
+    ##打开txt.csv文件
+    scenarios: pandas.DataFrame = pandas.read_csv("../txt/txt.csv")
+    with open('角色信息.json', encoding="utf-8") as f:
+        characters = json.load(f)
+    rephrased_scenarios_content = await replace_character(
+        scenarios, characters
     )
+    scenarios["Replaced Content"] = rephrased_scenarios_content
+
+    scenarios.to_csv("../txt/txt.csv", index=False)
 
 
 def main():
