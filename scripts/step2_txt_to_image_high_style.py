@@ -293,7 +293,7 @@ def run_comfyui_program(
             return generated_images
 
         style_threshold = 40    # init threshold for style compliance
-        alpha = 0.25            # set the speed of tolerate
+        alpha = 0.25            # set tolerate speed
         style_score = 100
         
         while style_score > style_threshold:
