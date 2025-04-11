@@ -5,28 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f03d818a-e448-4dd8-bdd6-87cbd7444de2" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/input.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/step0_create_character_dictionary.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/图片在这里.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/input.docx" beforeDir="false" afterPath="$PROJECT_DIR$/input.docx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/step0_create_character_dictionary.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step0_create_character_dictionary.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/step1_extract_keywords.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step1_extract_keywords.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/step2_txt_to_image_high.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step2_txt_to_image_high.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/step2_txt_to_image_high_bak.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step2_txt_to_image_high_bak.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/step2_txt_to_image_low.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step2_txt_to_image_low.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/step3_txt_to_voice.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step3_txt_to_voice.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/step3_txt_to_voice_free.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step3_txt_to_voice_free.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/step3_txt_to_voice_kokoro.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step3_txt_to_voice_kokoro.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/step4_output_video.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step4_output_video.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/角色信息.json" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/角色信息.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/temp/params.json" beforeDir="false" afterPath="$PROJECT_DIR$/temp/params.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/txt/txt.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/txt/txt.xlsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/txt/txt2.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/txt/txt2.xlsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,10 +36,13 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Python.download.executor": "Run",
     "Python.step0_create_character_dictionary.executor": "Run",
     "Python.step1_extract_keywords.executor": "Run",
     "Python.step2_txt_to_image_high.executor": "Run",
     "Python.step2_txt_to_image_high_bak.executor": "Run",
+    "Python.step3_txt_to_voice_kokoro.executor": "Run",
+    "Python.step4_output_video.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "master",
     "last_opened_file_path": "D:/MIP/Project/Magic-Touch/Magic-Touch/scripts",
@@ -93,17 +78,33 @@
       <updated>1742961640537</updated>
       <workItem from="1742961641421" duration="10000" />
       <workItem from="1742961686986" duration="7935000" />
-      <workItem from="1743819800087" duration="27283000" />
+      <workItem from="1743819800087" duration="36935000" />
+      <workItem from="1744019621236" duration="898000" />
+      <workItem from="1744102263650" duration="9854000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Magic_Touch$step2_txt_to_image_high_bak.coverage" NAME="step2_txt_to_image_high_bak Coverage Results" MODIFIED="1743843223577" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/Magic_Touch$step1_extract_keywords.coverage" NAME="step1_extract_keywords Coverage Results" MODIFIED="1743849220286" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
-    <SUITE FILE_PATH="coverage/Magic_Touch$step2_txt_to_image_high.coverage" NAME="step2_txt_to_image_high Coverage Results" MODIFIED="1743849644130" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
+    <SUITE FILE_PATH="coverage/Magic_Touch$download.coverage" NAME="download Coverage Results" MODIFIED="1743861616635" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Magic_Touch$step2_txt_to_image_high.coverage" NAME="step2_txt_to_image_high Coverage Results" MODIFIED="1743856920582" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
+    <SUITE FILE_PATH="coverage/Magic_Touch$step3_txt_to_voice_kokoro.coverage" NAME="step3_txt_to_voice_kokoro Coverage Results" MODIFIED="1743862270089" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/Magic_Touch$step0_create_character_dictionary.coverage" NAME="step0_create_character_dictionary Coverage Results" MODIFIED="1743834361553" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
+    <SUITE FILE_PATH="coverage/Magic_Touch$step4_output_video.coverage" NAME="step4_output_video Coverage Results" MODIFIED="1744104701381" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
   </component>
 </project>

@@ -62,6 +62,7 @@ temp_dir = os.path.join(parent_dir, 'temp')
 os.makedirs(temp_dir, exist_ok=True)
 
 total_files = len(os.listdir(image_dir))
+# total_files = 3
 fps = config['fps']
 enlarge_background = config['enlarge_background']
 enable_effect = config['enable_effect']
@@ -70,7 +71,7 @@ effect_type = config['effect_type']
 extensions = ['.png', '.jpg', '.jpeg']
 for i in tqdm(range(total_files), ncols=None, desc="正在生成视频"):
     filename = f'output_{i+1}'
-    audio_filename = f'output_{i+1}'
+    audio_filename = f'output_{i}'
     temp_filename = os.path.join(temp_dir, f'output_{i+1}.mp4')
 
     for ext in extensions:
@@ -101,7 +102,7 @@ for i in tqdm(range(total_files), ncols=None, desc="正在生成视频"):
 
     img_blur = im.filter(ImageFilter.GaussianBlur(radius=30))
     if enlarge_background:
-        img_blur = img_blur.resize((int(im.width * 1.1), int(im.height * 1.1)), Image.ANTIALIAS)
+        img_blur = img_blur.resize((int(im.width * 1.1), int(im.height * 1.1)), Image.Resampling.LANCZOS)
 
     frames_background = [np.array(img_blur)] * n_frames
     img_background = ImageSequenceClip(frames_background, fps=fps)
