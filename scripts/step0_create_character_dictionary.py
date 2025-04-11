@@ -115,6 +115,32 @@ def divide_scenarios(text):
         print("返回内容不是合法的 JSON，可以考虑用正则或人工检查")
         return result
 
+def divide_image(text):
+    prompt = f"""
+    请将下面的一个场景描述，分割成1~3个画面，你的目标是将该场景通过若干静态画面来展现，注意严格遵循原场景的文字描述，不要添加任何额外文字。
+    请返回JSON格式响应，键值对为"画面[NUMBER]": "[Scene Description]"
+    场景描述如下：{text}
+    """
+    response = client.chat.completions.create(
+        model="qwen-max-2025-01-25",  # 或 "gpt-3.5-turbo"
+        messages=[
+            {"role": "system", "content": "你是一个专业的小说改编影视的编剧。"},
+            {"role": "user", "content": prompt}
+        ],
+        response_format={"type": "json_object"},
+        temperature=0.5,
+    )
+
+    result = response.choices[0].message.content
+    try:
+        cleaned = re.sub(r'^```json|```$', '', result.strip(), flags=re.MULTILINE).strip()
+        json_data = json.loads(cleaned)
+        return json_data
+    except json.JSONDecodeError:
+        print("返回内容不是合法的 JSON，可以考虑用正则或人工检查")
+        return result
+
+
 def translate(text):
     response = client.chat.completions.create(
         model="deepseek-v3",  # 或 "gpt-3.5-turbo"
@@ -131,14 +157,29 @@ def translate(text):
 
 def save_scenarios(scenarios_json):
     #把场景分割以及对应的翻译存到csv里
-    scenario_values = scenarios_json.values()
     rows = []
-    for scenario in tqdm.tqdm(scenario_values, desc="Saving scenarios"):
+    for scenario in tqdm.tqdm(scenarios_json.values(), desc="Processing scenarios"):
         chinese_content = scenario['内容']
-        english_content = translate(chinese_content)
-        rows.append(
-            {'Chinese Content':chinese_content, 'English Content':english_content, 'SD Content':'', 'SD Prompt':''}
-        )
+        image_json = divide_image(chinese_content)
+        
+        # 记录每个场景对应的图像在DataFrame中的索引位置
+        subimages = []
+        start_index = len(rows)
+        
+        for image in tqdm.tqdm(image_json.values(), desc="Processing images"):
+            english_content = translate(image)
+            rows.append(
+                {'Chinese Content':image, 'English Content':english_content, 'SD Content':'', 'SD Prompt':''}
+            )
+            subimages.append(start_index)
+            start_index += 1
+        
+        # 将索引列表保存到场景中
+        scenario['子图索引'] = subimages
+    
+    # 将更新后的场景数据保存到本地
+    with open("场景分割.json", "w", encoding="utf-8") as f:
+        json.dump(scenarios_json, f, indent=2, ensure_ascii=False)
     df = pd.DataFrame(rows)
     df.to_csv('../txt/txt.csv', index=False)
 
