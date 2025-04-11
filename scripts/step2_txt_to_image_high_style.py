@@ -18,6 +18,10 @@ from tqdm import tqdm
 from PIL import Image
 from typing import Any, Optional
 
+from torchmetrics.multimodal.clip_score import CLIPScore
+# set clip model
+clip_score = CLIPScore(".cache/openai/clip-vit-base-patch16")
+
 # 设置调试模式（修改 DEBUG 为 False 可关闭调试日志）
 DEBUG: bool = False
 if DEBUG:
@@ -251,10 +255,9 @@ def run_comfyui_program(
         config = json.load(f)
 
 
-
     for i, prompt_text in tqdm(prompts_to_process, desc='绘图进度', unit='image'):
         # 直接使用 Excel 中的提示作为正面提示，负面提示为空
-        more_details = config.get("more_details")
+        more_details = config.get("more_details") # style info
         positive_prompt = f"{more_details},{prompt_text},"
         negative_prompt = config.get("negative_prompt")
 
@@ -282,25 +285,46 @@ def run_comfyui_program(
         )
 
         # 使用 WebSocket 与 ComfyUI 通信
-        ws = websocket.WebSocket()
-        ws.connect(f"ws://{SERVER_ADDRESS}/ws?clientId={CLIENT_ID}")
-        generated_images = collect_generated_images(ws, workflow)
-        ws.close()
+        def generate(workflow):
+            ws = websocket.WebSocket()
+            ws.connect(f"ws://{SERVER_ADDRESS}/ws?clientId={CLIENT_ID}")
+            generated_images = collect_generated_images(ws, workflow)
+            ws.close()
+            return generated_images
 
-        if generated_images:
-            for fname, img_data in generated_images.items():
+        style_threshold = 0.3 # init threshold for style compliance
+        style_score = 0
+        while style_score < style_threshold:
+            generated_images = generate(workflow)
+            
+            if generated_images:
+                assert len(generated_images) == 1 # suppose we only generate 1 pic a time
+                
+                fname, img_data = generated_images[0]
+                style_score = clip_score(
+                    img_data,
+                    f"a picture in the style of {more_details}",
+                )
+                
+                if style_score < style_threshold:
+                    style_threshold = (style_score + style_threshold) / 2
+                    print(f"{output_file}: Repaint for better style alignment...")
+                    continue
+                
+                print(f"{output_file}: Pass with style score {style_score}!")
                 save_path = os.path.join(image_dir, output_file)
                 with open(save_path, "wb") as f:
                     f.write(img_data)
                 logging.info("Saved image to: %s", save_path)
-            # 保存绘图参数
-            temp_dir = os.path.join(current_dir, 'temp')
-            os.makedirs(temp_dir, exist_ok=True)
-            with open(os.path.join(temp_dir, 'params.json'), 'a', encoding="utf-8") as f:
-                json.dump({output_file: workflow}, f, ensure_ascii=False)
-                f.write('\n')
-        else:
-            logging.error("未获取到图片：%s", output_file)
+                # 保存绘图参数
+                temp_dir = os.path.join(current_dir, 'temp')
+                os.makedirs(temp_dir, exist_ok=True)
+                with open(os.path.join(temp_dir, 'params.json'), 'a', encoding="utf-8") as f:
+                    json.dump({output_file: workflow}, f, ensure_ascii=False)
+                    f.write('\n')
+            else:
+                logging.error("未获取到图片：%s", output_file)
+                break
 
 # -------------------------------
 # 主程序流程

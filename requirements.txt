@@ -1,4 +1,4 @@
 modelscope
-kokoro>=0.8.2
+kokoro #>=0.8.2
 soundfile
 misaki[zh]>=0.8.2
