@@ -4,10 +4,11 @@
 import os
 import json
 import uuid
-import io
+import numpy as np
 import random
 import urllib.request
 import urllib.parse
+from torch import Tensor
 from distutils.command.config import config
 
 import websocket  # pip install websocket-client
@@ -15,12 +16,15 @@ import openpyxl
 import chardet
 import logging
 from tqdm import tqdm
+from io import BytesIO
 from PIL import Image
 from typing import Any, Optional
 
-from torchmetrics.multimodal.clip_score import CLIPScore
 # set clip model
+from functools import partial
+from torchmetrics.multimodal.clip_score import CLIPScore
 clip_score = CLIPScore(".cache/openai/clip-vit-base-patch16")
+
 
 # 设置调试模式（修改 DEBUG 为 False 可关闭调试日志）
 DEBUG: bool = False
@@ -251,38 +255,19 @@ def run_comfyui_program(
     }
     default_params.update(extra_data)
 
-    with open("../config.json", "r", encoding="utf-8") as f:
+    with open("config.json", "r", encoding="utf-8") as f:
         config = json.load(f)
 
 
     for i, prompt_text in tqdm(prompts_to_process, desc='绘图进度', unit='image'):
         # 直接使用 Excel 中的提示作为正面提示，负面提示为空
         more_details = config.get("more_details") # style info
-        positive_prompt = f"{more_details},{prompt_text},"
+        positive_prompt = prompt_text
         negative_prompt = config.get("negative_prompt")
 
         output_file = f'output_{i+1}.png'
         if output_file in existing_files and prompts_to_redraw is None:
             continue
-
-        workflow = build_workflow(
-            positive_prompt=positive_prompt,
-            negative_prompt=negative_prompt,
-            width=default_params["width"],
-            height=default_params["height"],
-            cfg=default_params["cfg"],
-            sampler_name=default_params["sampler_name"],
-            steps=default_params["steps"],
-            model_name=default_params["model_name"],
-            clip_name1=default_params["clip_name1"],
-            clip_name2=default_params["clip_name2"],
-            clip_name3=default_params["clip_name3"],
-            seed=default_params["seed"],
-            seed_behavior=default_params["seed_behavior"],
-            scheduler=default_params["scheduler"],
-            denoise=default_params["denoise"],
-            batch_size=default_params["batch_size"]
-        )
 
         # 使用 WebSocket 与 ComfyUI 通信
         def generate(workflow):
@@ -292,30 +277,58 @@ def run_comfyui_program(
             ws.close()
             return generated_images
 
-        style_threshold = 40    # init threshold for style compliance
-        alpha = 0.25            # set tolerate speed
-        style_score = 100
+        style_threshold = 29    # init threshold for style compliance
+        alpha = 0.2             # set adaptive tolerate speed
+        beta = 0.5              # set static tolerate speed
+        style_score = 0
+        seed_offset = 0
         
-        while style_score > style_threshold:
+        while style_score < style_threshold:
+            print("Painting:", i + 1, ':', style_score, style_threshold)
+            workflow = build_workflow(
+                positive_prompt=f"{more_details},{positive_prompt}",
+                negative_prompt=negative_prompt,
+                width=default_params["width"],
+                height=default_params["height"],
+                cfg=default_params["cfg"],
+                sampler_name=default_params["sampler_name"],
+                steps=default_params["steps"],
+                model_name=default_params["model_name"],
+                clip_name1=default_params["clip_name1"],
+                clip_name2=default_params["clip_name2"],
+                clip_name3=default_params["clip_name3"],
+                seed=default_params["seed"] + seed_offset,
+                seed_behavior=default_params["seed_behavior"],
+                scheduler=default_params["scheduler"],
+                denoise=default_params["denoise"],
+                batch_size=default_params["batch_size"]
+            )
             generated_images = generate(workflow)
             if generated_images:
                 assert len(generated_images) == 1 # suppose we only generate 1 pic a time
-                fname, img_data = generated_images[0]
+                fname, img_bin = generated_images.popitem()
+                
+                img = Image.open(BytesIO(img_bin))
                 style_score = clip_score(
-                    img_data,
+                    Tensor(np.array(img)),
                     f"a picture in the style of {more_details}",
                 )
                 
                 if style_score < style_threshold:
-                    style_threshold = style_threshold + (style_score - style_score) * alpha
-                    print(f"{output_file}: Repaint for better style alignment...")
+                    seed_offset += 1
+                    style_threshold = style_threshold + (style_score - style_threshold) * alpha - beta
+                    print(f"{output_file}: Repaint for better style alignment... {style_score}")
+                    
+                    save_path = os.path.join(image_dir, f"bad_{output_file}")
+                    img.save(save_path)
+                    
                     continue
                 
                 print(f"{output_file}: Pass with style score {style_score}!")
                 save_path = os.path.join(image_dir, output_file)
-                
-                with open(save_path, "wb") as f:
-                    f.write(img_data)
+                img.save(save_path)
+                # with open(save_path, "wb") as f:
+                #     f.write(img_data)
                 
                 logging.info("Saved image to: %s", save_path)
                 
@@ -335,6 +348,7 @@ def run_comfyui_program(
 # -------------------------------
 
 if __name__ == '__main__':
+    
     print("BADAPPLE")
 
     # 固定使用本地 ComfyUI API 地址
