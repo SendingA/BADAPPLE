@@ -6,7 +6,6 @@ import time
 import json
 import chardet
 import asyncio
-import aiohttp
 from docx import Document
 from tqdm import tqdm
 
