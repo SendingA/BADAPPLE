@@ -9,6 +9,7 @@ import openpyxl
 import asyncio
 import tqdm
 import argparse
+import json
 
 class SpeechProvider:
     def __init__(self, gender, language):
@@ -19,7 +20,7 @@ class SpeechProvider:
 
         self.SAMPLE_RATE = 24000
         # How much silence to insert between paragraphs: 5000 is about 0.2 seconds
-        self.N_ZEROS = 5000
+        self.N_ZEROS = 10000
         # VOICES = glob.glob(f"./voice/Kokoro-82M-v1.1-zh/voices/{GENDER}*.pt")
         self.VOICE = kororo_path + '/voices/zf_003.pt' if gender == 'zf' else kororo_path + '/voices/zm_031.pt'
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -37,7 +38,7 @@ class SpeechProvider:
         return next(self.en_pipeline(text)).phonemes
 
     def speed_callable(self,len_ps):
-        speed = 0.8
+        speed = 0.82
         if len_ps <= 100:
             speed = 1
         elif len_ps < 200:
@@ -73,16 +74,12 @@ def  convert_text_to_audio(tasks, language, output_path,gender):
 
 def process_text_files(input_file, output_dir, language, gender):
     print("BADAPPLE")
-
-    
-    wb = openpyxl.load_workbook(input_file)
-    sheet = wb.active
-    column = sheet["D"]
+    with open(input_file, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    scenarios = [item["内容"] for item in data.values()]
     tasks = []
-    for cell in column:
-        text = cell.value
-        if text:
-            tasks.append((text,))
+    for scenario in scenarios:
+        tasks.append((scenario,))
     convert_text_to_audio(tasks, language, output_dir, gender)
 
 
@@ -90,7 +87,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Text to Speech Converter')
     script_dir = os.path.dirname(os.path.realpath(__file__))
 
-    default_input_file = os.path.join(script_dir, "..", "txt", "txt.xlsx")
+    default_input_file = os.path.join(script_dir, "..", "scripts", "场景分割.json")
     default_output_dir = os.path.join(script_dir, "..", "voice")
 
 
