@@ -8,7 +8,6 @@ import io
 import random
 import urllib.request
 import urllib.parse
-from distutils.command.config import config
 
 import websocket  # pip install websocket-client
 import openpyxl
@@ -323,7 +322,7 @@ if __name__ == '__main__':
         for s in user_input.split():
             try:
                 idx = int(s.strip()) - 1
-                file_name = f"output_{idx+1}.png"
+                file_name = f"output_{idx}.png"
                 file_path = os.path.join(current_dir, 'image', file_name)
                 if os.path.exists(file_path):
                     file_numbers_to_redraw.append(idx)
