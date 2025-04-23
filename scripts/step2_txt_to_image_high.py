@@ -14,6 +14,8 @@ import websocket  # pip install websocket-client
 import openpyxl
 import chardet
 import logging
+
+from IPython.core.debugger import prompt
 from tqdm import tqdm
 from PIL import Image
 from typing import Any, Optional
@@ -197,7 +199,10 @@ def get_prompts(path: str) -> list[str]:
     """
     从 Excel 文件中读取提示语，取第 C 列中非空的单元格内容。
     """
+    # import pandas as pd
     prompts_file = os.path.join(current_dir, path)
+    # df = pd.read_csv(prompts_file)
+    # prompt
     wb = openpyxl.load_workbook(prompts_file)
     sheet = wb.active
     prompts = [cell.value for cell in sheet['C'] if cell.value]
@@ -214,7 +219,7 @@ def run_comfyui_program(prompts_to_redraw: Optional[list[int]] = None, extra_dat
     若 prompts_to_redraw 为 None，则处理所有提示；否则仅处理指定下标的提示（下标从 0 开始）。
     extra_data 中可包含额外的 workflow 参数，会 merge 到 build_workflow 的参数中。
     """
-    prompts = get_prompts(os.path.join('txt', 'txt2.xlsx'))
+    prompts = get_prompts(os.path.join('txt', 'output.xlsx'))
     image_dir = os.path.join(current_dir, 'image')
     os.makedirs(image_dir, exist_ok=True)
 
@@ -247,10 +252,7 @@ def run_comfyui_program(prompts_to_redraw: Optional[list[int]] = None, extra_dat
     with open("../config.json", "r", encoding="utf-8") as f:
         config = json.load(f)
 
-
-
     for i, prompt_text in tqdm(prompts_to_process, desc='绘图进度', unit='image'):
-        # 直接使用 Excel 中的提示作为正面提示，负面提示为空
         more_details = config.get("more_details")
         positive_prompt = f"{prompt_text},{more_details}"
         negative_prompt = config.get("negative_prompt")
