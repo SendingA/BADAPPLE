@@ -348,7 +348,7 @@ def run_comfyui_program(
                     "role": "user",
                     "content": [
                         {
-                            "type": "imageurl",
+                            "type": "image_url",
                             "imageurl": {
                                 "url": f"data:image/jpeg;base64,{img_base64}"
                             }
@@ -361,8 +361,8 @@ def run_comfyui_program(
                 })
 
                 client = OpenAI(
-                    api_key="sk-db3f839bc51e459dae3aab49d1a779e2",  # 可改为环境变量
-                    base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+                    api_key="sk-cLHG0jRuBeFDE49617b9T3BLBkFJe5b79d2bDefD4Db7b9fa",
+                    base_url="https://cn2us02.opapi.win/v1",
                 )
 
                 response = client.chat.completions.create(
