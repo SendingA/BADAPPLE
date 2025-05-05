@@ -328,7 +328,10 @@ def run_comfyui_program(
                     {
                         "role": "user",
                         "content": [
-                            {"type": "text", "text": "Here are two examples image content description. Please learn from their style and generate a similar description for the input image."}
+                            {
+                                "type": "text",
+                                "text": "Here are two examples image content description. Please learn from their style and generate a similar description for the input image."
+                            }
                         ]
                     }
                 ]
@@ -366,7 +369,7 @@ def run_comfyui_program(
                 )
                 
                 desc = response.choices[0].message.content.strip()
-                print(desc)
+                print(desc, "\n--------------------------------------------\n", prompt_text)
 
                 style_score = clip_score(
                     Tensor(np.array(img)),
