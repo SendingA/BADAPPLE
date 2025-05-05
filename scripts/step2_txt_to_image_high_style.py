@@ -349,7 +349,7 @@ def run_comfyui_program(
                     "content": [
                         {
                             "type": "image_url",
-                            "imageurl": {
+                            "image_url": {
                                 "url": f"data:image/jpeg;base64,{img_base64}"
                             }
                         },
