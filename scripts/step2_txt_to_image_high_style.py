@@ -334,29 +334,21 @@ def run_comfyui_program(
                 ]
                 
                 for ex in examples:
-                    messages.append({
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "text",
-                                "text": ex["description"]
-                            }
-                    ]
+                    messages[0]["content"].append({
+                        "type": "text",
+                        "text": ex["description"]
                 })
 
-                messages.append({
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "input_image",
-                            "image_url": f"data:image/jpeg;base64,{img_base64}",
-                        },
-                        {
-                            "type": "text",
-                            "text": "Now, please learn from the style of the previous descriptions and generate a similar description for the third image."
-                        }
-                    ]
-                })
+                messages[0]["content"] += [
+                    {
+                        "type": "input_image",
+                        "image_url": f"data:image/jpeg;base64,{img_base64}",
+                    },
+                    {
+                        "type": "text",
+                        "text": "Now, please learn from the style of the previous descriptions and generate a similar description for the third image."
+                    },
+                ]
 
                 client = OpenAI(
                     api_key="sk-cLHG0jRuBeFDE49617b9T3BLBkFJe5b79d2bDefD4Db7b9fa",
