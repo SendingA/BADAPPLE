@@ -334,14 +334,9 @@ def run_comfyui_program(
                 ]
                 
                 for ex in examples:
-                    messages.append({
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "text",
-                                "text": ex["description"]
-                            }
-                    ]
+                    messages[0]["content"].append({
+                        "type": "text",
+                        "text": ex["description"]
                 })
 
                 messages.append({
