@@ -216,6 +216,9 @@ def get_prompts(path: str) -> list[str]:
 # 使用 ComfyUI API 绘图流程
 # -------------------------------
 
+import base64
+from openai import OpenAI
+
 def run_comfyui_program(
         prompts_to_redraw: Optional[list[int]] = None,
         extra_data: dict[str, Any] = {},
@@ -307,14 +310,97 @@ def run_comfyui_program(
                 batch_size=default_params["batch_size"]
             )
             generated_images = generate(workflow)
+
+            def image_file_to_base64(path):
+                with open(path, "rb") as f:
+                    img = Image.open(f)
+                    buffered = BytesIO()
+                    img.save(buffered, format="JPEG")
+                    return base64.b64encode(buffered.getvalue()).decode("utf-8")
+
+            def image_to_base64(image_bytes):
+                img = Image.open(BytesIO(image_bytes))
+                buffered = BytesIO()
+                img.save(buffered, format="JPEG")
+                return base64.b64encode(buffered.getvalue()).decode("utf-8")
+            
             if generated_images:
                 assert len(generated_images) == 1 # suppose we only generate 1 pic a time
                 fname, img_bin = generated_images.popitem()
                 
                 img = Image.open(BytesIO(img_bin))
+
+                """
+                用来将图片转化为base64格式能够传入大语言模型。
+                """
+                buffered = BytesIO()
+                img.save(buffered, format="JPEG")
+                img_base64 = base64.b64encode(buffered.getvalue()).decode("utf-8")
+
+                 # 假设前两张图我们已经知道想给的描述语句
+                examples = [
+                    {
+                        "description": "A regal king and a beautiful queen standing in a majestic castle, the king is a middle-aged man with short, neatly styled hair, wearing a golden crown and ornate robes adorned with intricate patterns, his expression a mix of hope and desperation, the queen is slim and ethereal, with long flowing hair, gentle yet sad eyes, and delicate features, dressed in a flowing gown made of soft fabrics, the atmosphere is filled with a soft golden light, shining through large stained glass windows, casting colorful patterns on the stone floor, rich tapestries hanging on the walls depicting scenes of family and longing, a serene aura surrounds them, evoking a sense of deep yearning and compassion, highly detailed, realistic style, warm color tones, dramatic lighting, cinematic perspective, emotional depth."
+                    },
+                    {
+                        "description": "A noble king and an elegant queen stand side by side in a grand medieval throne room. The king, with chiseled features and swept-back brown hair, wears a deep red velvet cloak adorned with golden embroidery, a regal crown resting atop his head. His expression is firm yet contemplative, suggesting both duty and emotional weight. The queen, graceful and radiant, has long flowing dark hair, delicate facial features, and a slender figure. She wears an off-shoulder white and silver gown that catches the golden light pouring through tall stained glass windows. Warm sunlight bathes the stone floor in colorful reflections, and ancient tapestries drape the walls, adding depth and legacy to the atmosphere. The mood is cinematic and solemn, filled with quiet grandeur and emotional restraint, painted in warm tones and realistic detail."
+                    }
+                ]
+
+                # 要求模型参考前两个样例对第三张图进行文本生成
+                messages = [
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": "Here are two examples. Each one has a description. Please learn from their style and generate a similar description for the third image."}
+                        ]
+                    }
+                ]
+
+                # 加入前两个例子的描述
+                for ex in examples:
+                    messages.append({
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": ex["description"]
+                            }
+                    ]
+                })
+
+                # 第三张图需要生成描述
+                messages.append({
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "imageurl",
+                            "imageurl": {
+                                "url": f"data:image/jpeg;base64,{img_base64}"
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": "Now, please learn from the style of the previous descriptions and generate a similar description for the third image."
+                        }
+                    ]
+                })
+
+                client = OpenAI(
+                    api_key="sk-db3f839bc51e459dae3aab49d1a779e2",  # 可改为环境变量
+                    base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"
+                )
+
+                response = client.chat.completions.create(
+                    model="gpt-4.1-mini",
+                    messages=messages
+                )
+                
+                desc = response.choices[0].message.content.strip()
+                print(desc)
+
                 style_score = clip_score(
-                    Tensor(np.array(img)),
-                    f"a picture in the style of {more_details}",
+                    preds=[desc], target=[positive_prompt],
                 )
                 
                 if style_score < style_threshold:
