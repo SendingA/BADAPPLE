@@ -348,10 +348,8 @@ def run_comfyui_program(
                     "role": "user",
                     "content": [
                         {
-                            "type": "image_url",
-                            "imageurl": {
-                                "url": f"data:image/jpeg;base64,{img_base64}"
-                            }
+                            "type": "input_image",
+                            "image_url": f"data:image/jpeg;base64,{img_base64}",
                         },
                         {
                             "type": "text",
