@@ -1,0 +1,253 @@
+Index: config.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>{\r\n  \"角色名1\": \"国王\",\r\n  \"特征1\": \"一位身材高大的中年男子，蓄着整齐的深棕色胡须，面容威严却略带疲态，头戴镶嵌红宝石的金色王冠，身穿红黑相间的长袍，肩披白底黑点的毛皮披风，腰间悬挂金色佩剑，行走时脚步沉稳有力\",\r\n  \"角色名2\": \"王后\",\r\n  \"特征2\": \"面容温柔、肤色苍白的女性，长着一双温润的浅棕色眼睛，身穿天蓝色丝质宫廷长裙，裙摆绣有银色藤蔓图案，头戴细致的银冠。她走路步伐轻缓，经常需侍女搀扶，面带微笑却时常咳嗽，透出一丝病态之美\",\r\n  \"角色名3\": \"白雪公主\",\r\n  \"特征3\": \"拥有雪白肌肤与水灵大眼的少女，黑亮如丝的长发垂至腰间，嘴唇红润如玫瑰。她身穿一袭蓝黄色相间的公主裙，红色丝带束起长发，举止优雅，常带甜美微笑，声音清脆如银铃，给人一种如晨露般纯净的感觉\",\r\n  \"角色名4\": \"新王后\",\r\n  \"特征4\": \"身姿高挑，容貌艳丽冷峻，拥有绿色猫眼般的瞳孔和漆黑的直发，常穿暗紫色镶金边的高领长袍，黑色披风随风飘动。头戴尖角皇冠，手持黑曜石权杖。眼神凌厉，常勾起一侧嘴角冷笑，神秘中带着压迫感\",\r\n  \"角色名5\": \"武士\",\r\n  \"特征5\": \"一位身穿深蓝色轻甲的年轻武士，背负长剑，腰间挂着绣有王徽的腰带，面容刚毅、眉目坚定，头发被束成低马尾，身姿挺拔。眼中透着矛盾与仁慈，在执行命令时常露出挣扎之情\",\r\n  \"角色名6\": \"七个小矮人\",\r\n  \"特征6\": \"每人约1.2米高，头戴颜色各异的软帽（红、绿、蓝等），留着浓密胡子，穿着宽松工作服，系着皮革围裙，脚踏厚实小靴。他们表情各异，有的严肃、有的憨笑、有的打哈欠，手持镐头或扫帚，住在干净整齐的木屋里，屋内井然有序\",\r\n  \"角色名7\": \"邻国王子\",\r\n  \"特征7\": \"拥有一头金棕色短发和深蓝色眼睛的王子，面容俊朗、身材修长。他穿着镶银边的白色披风与深蓝色骑士制服，胸口绣着王室徽章，腰挂短剑。骑着高大白马而来，神情坚定而温柔，举止得体，礼貌谦逊\",\r\n  \"角色名8\": \"\",\r\n  \"特征8\": \"\",\r\n  \"角色名9\": \"\",\r\n  \"特征9\": \"\",\r\n  \"角色名10\": \"\",\r\n  \"特征10\": \"\",\r\n  \"//\": \"图片切换特效样式，fade=淡入淡出,slide=滑动, rotate=旋转, scroll=滚动, flip_horizontal=水平翻转, flip_vertical=垂直翻转\",\r\n  \"句子最小长度限制\": 50,\r\n  \"引导词\": \"Task: I will tell you the theme of the prompt to generate in natural language, and your task is to imagine a complete picture based on this theme, then transform it into a detailed, high-quality prompt, so that Stable Diffusion can generate high-quality images. Prompt concept: A prompt is used to describe images, composed of common, often used words, using English half-width ',' as a separator. Each word or phrase separated by ',' is known as a tag. So a prompt consists of a series of tags separated by ','. Below, I will explain the steps to generate a prompt, where the prompt can be used to describe characters, scenery, objects or abstract digital art drawings. Prompt requirements: The prompt should contain elements such as the main subject of the image, texture, additional details, image quality, artistic style, color tone, lighting, etc. Attention, the prompt you output cannot be split into sections, for example, descriptions like 'medium:','Main subject:','Keywords:','Prompt:','texture:','additional details:','image quality:','artistic style:','color tone:','lighting:','tags:' are not needed and it cannot contain ':' or '.'! Main subject: Briefly describe the main subject of the picture in English, such as 'A girl in a garden'. This encapsulates the core content of the image (the subject can be people, things, objects, landscapes). This part is generated based on the theme I give you each time. You can add more reasonable details related to the theme. For character themes, you must describe the character's eyes, nose, and lips, for example 'beautiful detailed eyes, beautiful detailed lips, extremely detailed eyes and face, long eyelashes', to avoid Stable Diffusion randomly generating deformed facial features, this is very important. The theme I provide is:\",\r\n  \"cloud_address\": \"\",\r\n  \"more_details\": \"American Disney style,2D,HDR,4K\",\r\n  \"data\": {\r\n    \"//\": \"负面提示词\",\r\n    \"enable_hr\": true,\r\n    \"denoising_strength\": 0.4,\r\n    \"firstphase_width\": 960,\r\n    \"firstphase_height\": 540,\r\n    \"hr_scale\": 2,\r\n    \"hr_upscaler\": \"R-ESRGAN 4x+ Anime6B\",\r\n    \"hr_second_pass_steps\": 10,\r\n    \"sampler_name\": \"DPM adaptive\",\r\n    \"batch_size\": 1,\r\n    \"steps\": 150,\r\n    \"cfg_scale\": 7,\r\n    \"restore_faces\": false,\r\n    \"negative_prompt\": \"badhandv4,ng_deepnegative_v1_64t,worst quality,low quality,normal quality,lowers,monochrome,grayscales,skin spots,acnes,skin blemishes,age spot,6 more fingers on one hand,deformity,bad legs,error legs,bad feet,malformed limbs,extra limbs,ugly,poorly drawn hands,poorly drawn feet,poorly drawn face,text,mutilated,extra fingers,mutated hands,mutation,bad anatomy,cloned face,disfigured,fused fingers\"\r\n  },\r\n  \"voice\": \"zh-CN-XiaoxiaoNeural\",\r\n  \"rate\": \"+30%\",\r\n  \"volume\": \"+0%\",\r\n  \"subscription\": \"\",\r\n  \"region\": \"eastasia\",\r\n  \"voice_name\": \"zh-CN-YunyeNeural\",\r\n  \"style\": \"embarrassed\",\r\n  \"role\": \"OlderAdultMale\",\r\n  \"prosody_rate\": \"+0%\",\r\n  \"prosody_pitch\": \"+0st\",\r\n  \"prosody_volume\": \"+0%\",\r\n  \"emphasis_level\": \"none\",\r\n  \"style_degree\": \"1\",\r\n  \"fps\": 20,\r\n  \"enlarge_background\": true,\r\n  \"enable_effect\": true,\r\n  \"effect_type\": \"fade\"\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/config.json b/config.json
+--- a/config.json	(revision b18614c69dd6c3e7b742896962d6c3af67768280)
++++ b/config.json	(date 1744386711699)
+@@ -1,22 +1,22 @@
+ {
+   "角色名1": "国王",
+-  "特征1": "一位身材高大的中年男子，蓄着整齐的深棕色胡须，面容威严却略带疲态，头戴镶嵌红宝石的金色王冠，身穿红黑相间的长袍，肩披白底黑点的毛皮披风，腰间悬挂金色佩剑，行走时脚步沉稳有力",
+-  "角色名2": "王后",
+-  "特征2": "面容温柔、肤色苍白的女性，长着一双温润的浅棕色眼睛，身穿天蓝色丝质宫廷长裙，裙摆绣有银色藤蔓图案，头戴细致的银冠。她走路步伐轻缓，经常需侍女搀扶，面带微笑却时常咳嗽，透出一丝病态之美",
+-  "角色名3": "白雪公主",
+-  "特征3": "拥有雪白肌肤与水灵大眼的少女，黑亮如丝的长发垂至腰间，嘴唇红润如玫瑰。她身穿一袭蓝黄色相间的公主裙，红色丝带束起长发，举止优雅，常带甜美微笑，声音清脆如银铃，给人一种如晨露般纯净的感觉",
+-  "角色名4": "新王后",
+-  "特征4": "身姿高挑，容貌艳丽冷峻，拥有绿色猫眼般的瞳孔和漆黑的直发，常穿暗紫色镶金边的高领长袍，黑色披风随风飘动。头戴尖角皇冠，手持黑曜石权杖。眼神凌厉，常勾起一侧嘴角冷笑，神秘中带着压迫感",
+-  "角色名5": "武士",
+-  "特征5": "一位身穿深蓝色轻甲的年轻武士，背负长剑，腰间挂着绣有王徽的腰带，面容刚毅、眉目坚定，头发被束成低马尾，身姿挺拔。眼中透着矛盾与仁慈，在执行命令时常露出挣扎之情",
+-  "角色名6": "七个小矮人",
+-  "特征6": "每人约1.2米高，头戴颜色各异的软帽（红、绿、蓝等），留着浓密胡子，穿着宽松工作服，系着皮革围裙，脚踏厚实小靴。他们表情各异，有的严肃、有的憨笑、有的打哈欠，手持镐头或扫帚，住在干净整齐的木屋里，屋内井然有序",
+-  "角色名7": "邻国王子",
+-  "特征7": "拥有一头金棕色短发和深蓝色眼睛的王子，面容俊朗、身材修长。他穿着镶银边的白色披风与深蓝色骑士制服，胸口绣着王室徽章，腰挂短剑。骑着高大白马而来，神情坚定而温柔，举止得体，礼貌谦逊",
+-  "角色名8": "",
+-  "特征8": "",
+-  "角色名9": "",
+-  "特征9": "",
++  "特征1": "一位中年男子，面容庄重慈祥，身穿华丽的金色王袍，头戴镶嵌宝石的皇冠，腰间系着宽大的皮带，脚穿黑色长靴。",
++  "角色名2": "王后（白雪公主生母）",
++  "特征2": "一位优雅端庄的女子，约三十岁左右，皮肤白皙细腻，黑发垂至肩部，眼睛深邃明亮，身材纤细高挑，身着淡蓝色丝绸长裙，佩戴珍珠项链和耳环。",
++  "角色名3": "白雪公主（儿童）",
++  "特征3": "一位五六岁的女孩，皮肤如雪般洁白，双颊红润如苹果，乌黑柔顺的长发扎成两条辫子垂在肩上，眼睛大而明亮，身穿浅粉色连衣裙，裙边点缀白色蕾丝，脚穿棕色小皮鞋。",
++  "角色名4": "白雪公主（美少女）",
++  "特征4": "一位十五六岁的少女，皮肤白皙如雪，双颊红润如玫瑰，乌黑柔顺的长发披散至腰间，眼睛清澈明亮，身材修长匀称，身穿天蓝色丝绸长裙，裙摆绣有精致的花朵图案，腰间系着银色腰带，脚穿白色绸缎鞋子。",
++  "角色名5": "新王后（女巫形态前）",
++  "特征5": "一位约四十岁的女人，容貌美丽但略显冷峻，皮肤白皙无瑕，黑发盘成复杂的发髻，眼睛锐利且带有威严，身材高挑挺拔，身穿深红色锦缎长袍，外披黑色天鹅绒斗篷，头戴镶钻金冠，手指戴着多枚宝石戒指。",
++  "角色名6": "新王后（女巫形态后）",
++  "特征6": "一位装扮成老太婆的女巫，皮肤黝黑粗糙，头发灰白凌乱，身形佝偻瘦弱，身穿破旧的灰色麻布长袍，腰间挂着草药袋，脚穿磨损的布鞋，手持一根弯曲的木杖。",
++  "角色名7": "武士",
++  "特征7": "一位壮年男子，约三十岁，肤色健康小麦色，短发整齐利落，眼神坚定严肃，身穿铁灰色铠甲，外披深褐色披风，腰间佩带长剑，脚穿厚重的黑色战靴。",
++  "角色名8": "七个小矮人",
++  "特征8": "七位身材矮小的男子，年龄各异，皮肤多为健康的小麦色或微黑，发型各不相同但都显得粗犷自然，胡须长短不一，身穿不同颜色的粗布工作服，衣服上常沾有泥土或矿石粉末，腰间系着工具袋，脚穿结实的皮革靴子。",
++  "角色名9": "邻国王子",
++  "特征9": "一位二十岁左右的青年男子，皮肤白皙光滑，金色卷发垂至耳际，眼睛湛蓝深邃，身材挺拔健硕，身穿白色衬衣搭配深蓝色骑士外套，外披红色天鹅绒披风，腰间悬挂宝剑，脚穿黑色皮靴，骑乘白马时英姿飒爽。",
+   "角色名10": "",
+   "特征10": "",
+   "//": "图片切换特效样式，fade=淡入淡出,slide=滑动, rotate=旋转, scroll=滚动, flip_horizontal=水平翻转, flip_vertical=垂直翻转",
+Index: scripts/step0_create_character_dictionary.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># %%\r\ndef update_config_with_characters(character_data, config_path=\"..\\config.json\"):\r\n    # 加载已有 config.json\r\n    with open(config_path, \"r\", encoding=\"utf-8\") as f:\r\n        config = json.load(f)\r\n\r\n    # 清空原有的角色字段（角色名1~10 和 特征1~10）\r\n    for i in range(1, 11):\r\n        config[f\"角色名{i}\"] = \"\"\r\n        config[f\"特征{i}\"] = \"\"\r\n\r\n    # 写入新的角色信息\r\n    for idx, (role_key, feature_value) in enumerate(character_data.items()):\r\n        if \"角色名\" in role_key:\r\n            role_index = idx // 2 + 1\r\n            config[f\"角色名{role_index}\"] = feature_value\r\n        elif \"特征\" in role_key:\r\n            feature_index = idx // 2 + 1\r\n            config[f\"特征{feature_index}\"] = feature_value\r\n\r\n    # 保存回 config.json\r\n    with open(config_path, \"w\", encoding=\"utf-8\") as f:\r\n        json.dump(config, f, indent=2, ensure_ascii=False)\r\n    print(\"✅ config.json 已成功更新。\")\r\n\r\n\r\nfrom openai import OpenAI\r\nimport re\r\nimport os\r\nimport json\r\n\r\n\r\ndef extract_character_features(text):\r\n    prompt = f\"\"\"\r\n请阅读以下中文小说文本，并识别所有明确提到的“角色名”及其“特征描述”，并将结果用 JSON 结构返回。\r\nJSON的键值对为\"角色名\": \"xxx\", \"特征\": \"xxx\"\r\n注意：\r\n1. 角色名应当真实在文本中出现。\r\n2. 特征仅包括角色的数量、年龄、外貌、衣着，切记不要包含任何人物关系的描述\r\n3. 如果人物的特征不足甚至没有的话，可以根据文本内容编造。\r\n例子：\r\n  {{\"角色名1\": \"帕奇\",\r\n  \"特征1\": \"一个20岁的黑发男子\",\r\n\r\n  \"角色名2\": \"\",\r\n  \"特征2\": \"\",\r\n\r\n  \"角色名3\": \"\",\r\n  \"特征3\": \"\"}}\r\n\r\n小说内容如下：\r\n{text}\r\n\"\"\"\r\n    client = OpenAI(\r\n        # 如果没有配置环境变量，请用百炼API Key替换：api_key=\"sk-xxx\"\r\n        api_key=\"sk-db3f839bc51e459dae3aab49d1a779e2\",\r\n        base_url=\"https://dashscope.aliyuncs.com/compatible-mode/v1\"\r\n    )\r\n\r\n    response = client.chat.completions.create(\r\n        model=\"qwen-plus\",  # 或 \"gpt-3.5-turbo\"\r\n        messages=[\r\n            {\"role\": \"system\", \"content\": \"你是一个擅长文本分析的中文助手。\"},\r\n            {\"role\": \"user\", \"content\": prompt}\r\n        ],\r\n        response_format={\"type\": \"json_object\"},\r\n        temperature=0.5\r\n    )\r\n\r\n    result = response.choices[0].message.content\r\n\r\n    # 尝试解析 JSON\r\n    try:\r\n        # 步骤 1：去除 Markdown 包裹符\r\n        cleaned = re.sub(r'^```json|```$', '', result.strip(), flags=re.MULTILINE).strip()\r\n        # 步骤 2：解析为 Python 对象\r\n        json_data = json.loads(cleaned)\r\n        with open(\"角色信息.json\", \"w\", encoding=\"utf-8\") as f:\r\n            json.dump(json_data, f, indent=2, ensure_ascii=False)\r\n        return json_data\r\n    except json.JSONDecodeError:\r\n        print(\"返回内容不是合法的 JSON，可以考虑用正则或人工检查\")\r\n        return result\r\n\r\n\r\nif __name__ == '__main__':\r\n    print(\"BADAPPLE\")\r\n    with open(\"../input.txt\", \"r\", encoding=\"utf-8\") as file:\r\n        text = file.read()\r\n        character_info = extract_character_features(text)\r\n        print(character_info)\r\n        update_config_with_characters(character_info)
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/scripts/step0_create_character_dictionary.py b/scripts/step0_create_character_dictionary.py
+--- a/scripts/step0_create_character_dictionary.py	(revision b18614c69dd6c3e7b742896962d6c3af67768280)
++++ b/scripts/step0_create_character_dictionary.py	(date 1744386711706)
+@@ -30,37 +30,52 @@
+ import json
+ 
+ 
+-def extract_character_features(text):
+-    prompt = f"""
+-请阅读以下中文小说文本，并识别所有明确提到的“角色名”及其“特征描述”，并将结果用 JSON 结构返回。
++system_prompt = '''请阅读以下中文小说文本，并识别所有明确提到的“角色名”及其“特征描述”，并将结果用 JSON 结构返回。
+ JSON的键值对为"角色名": "xxx", "特征": "xxx"
+-注意：
+-1. 角色名应当真实在文本中出现。
+-2. 特征仅包括角色的数量、年龄、外貌、衣着，切记不要包含任何人物关系的描述
+-3. 如果人物的特征不足甚至没有的话，可以根据文本内容编造。
++提取规范：
++1.仅提取小说中真实出现的角色名称，不可虚构角色，请提取出所有的角色。
++
++2.每个角色如果在文本中经历明显成长（如婴儿、少女、成年）或变化为了不同的形态和样貌，请为每个阶段分别提取特征，名称中用括号注明阶段，如：“帕奇（儿童）”、“帕奇（成年）”、帕奇（整容后）。
++
++3.特征描述必须足够的具象和立体，不要出现“漂亮”，“慈祥”，“华丽”等抽象的描述，请务必包括以下信息：
++
++年龄段（如“十五六岁”、“约三十岁”）
++
++外貌（发色、发型、肤色、眼睛、身材、神态）
++
++衣着（服装颜色、材质、图案、饰品、鞋子等）
++
++4.编造补全说明：如文本未提及角色的某项外貌/服饰特征，可结合上下文风格合情合理地补全细节，避免留空，并不要出现“可能为”的字样。
++
++5.禁止输出人物关系、性格或心理活动（如“善良”“脾气暴躁”等）。
+ 例子：
+-  {{"角色名1": "帕奇",
+-  "特征1": "一个20岁的黑发男子",
++  {"角色名1": "帕奇（成年）",
++  "特征1": "一位身材高大的中年男子，蓄着整齐的深棕色胡须，面容威严却略带疲态，头戴镶嵌红宝石的金色王冠，身穿红黑相间的长袍，肩披白底黑点的毛皮披风，腰间悬挂金色佩剑，行走时脚步沉稳有力",
+ 
+   "角色名2": "",
+   "特征2": "",
+ 
+   "角色名3": "",
+-  "特征3": ""}}
++  "特征3": ""}
++'''
+ 
+-小说内容如下：
+-{text}
+-"""
++def extract_character_features(text):
++    prompt = f"""小说内容如下：{text}"""
+     client = OpenAI(
+         # 如果没有配置环境变量，请用百炼API Key替换：api_key="sk-xxx"
+         api_key="sk-db3f839bc51e459dae3aab49d1a779e2",
+         base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"
+     )
+ 
++    # client = OpenAI(
++    #     api_key="sk-cLHG0jRuBeFDE49617b9T3BLBkFJe5b79d2bDefD4Db7b9fa",
++    #     base_url="https://c-z0-api-01.hash070.com/v1",
++    # )
++
+     response = client.chat.completions.create(
+-        model="qwen-plus",  # 或 "gpt-3.5-turbo"
++        model="qwen-plus",  # 或 "gpt-3.5-turbo"  "qwen-plus"
+         messages=[
+-            {"role": "system", "content": "你是一个擅长文本分析的中文助手。"},
++            {"role": "system", "content": system_prompt},
+             {"role": "user", "content": prompt}
+         ],
+         response_format={"type": "json_object"},
+Index: scripts/step1_extract_keywords.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import os\r\nimport openpyxl\r\nimport spacy\r\nfrom openai import AsyncOpenAI\r\nimport time\r\nimport json\r\nimport chardet\r\nimport asyncio\r\nimport aiohttp\r\nfrom docx import Document\r\nfrom tqdm import tqdm\r\n\r\n# openai = AsyncOpenAI(\r\n#     api_key=\"sk-db3f839bc51e459dae3aab49d1a779e2\",\r\n#     base_url=\"https://dashscope.aliyuncs.com/compatible-mode/v1\",\r\n# )\r\n\r\nopenai = AsyncOpenAI(\r\n    api_key=\"sk-cLHG0jRuBeFDE49617b9T3BLBkFJe5b79d2bDefD4Db7b9fa\",\r\n    base_url=\"https://c-z0-api-01.hash070.com/v1\",\r\n)\r\n\r\nnlp = spacy.load(\"zh_core_web_sm\")\r\n\r\n\r\ndef load_config():\r\n    current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\r\n    config_file = os.path.join(current_dir, \"config.json\")\r\n\r\n    with open(config_file, \"rb\") as f:\r\n        encoding = chardet.detect(f.read())[\"encoding\"]\r\n\r\n    with open(config_file, \"r\", encoding=encoding) as f:\r\n        return json.load(f)\r\n\r\n\r\ndef replace_keywords(sentence, keyword_dict):\r\n    original_sentence = sentence\r\n    # print(keyword_dict)\r\n    for key, value in keyword_dict.items():\r\n        if key and value:\r\n            sentence = sentence.replace(key, f'{key}({value})')\r\n    return sentence, original_sentence\r\n\r\n\r\ndef merge_short_sentences(sentences, min_length):\r\n    merged_sentences = []\r\n    buffer_sentence = \"\"\r\n\r\n    for sentence in sentences:\r\n        sentence = sentence.strip()\r\n        if len(buffer_sentence + sentence) < min_length:\r\n            buffer_sentence += \" \" + sentence if buffer_sentence else sentence\r\n        else:\r\n            if buffer_sentence:\r\n                merged_sentences.append(buffer_sentence)\r\n            buffer_sentence = sentence\r\n\r\n    if buffer_sentence:\r\n        merged_sentences.append(buffer_sentence)\r\n\r\n    return merged_sentences\r\n\r\n\r\nasync def request_with_retry_async(\r\n    messages, max_tokens=500, max_requests=90, cooldown_seconds=60\r\n):\r\n    \"\"\"异步版本的API请求函数\"\"\"\r\n    attempts = 0\r\n    while attempts < max_requests:\r\n        try:\r\n            response = await openai.chat.completions.create(\r\n                # model=\"qwen-plus\",\r\n                model=\"gpt-4o-mini-2024-07-18\",\r\n                messages=messages,\r\n                max_tokens=max_tokens,\r\n                stop=None,\r\n            )\r\n            return response.choices[0].message.content.strip()\r\n        except Exception as e:\r\n            print(f\"发生错误：{str(e)}\")\r\n            await asyncio.sleep(10)\r\n        attempts += 1\r\n\r\n    return \"请求失败，已达到最大尝试次数\"\r\n\r\n\r\nasync def translate_to_english_async(text):\r\n    \"\"\"异步版本的英文翻译函数\"\"\"\r\n    messages = [\r\n        {\"role\": \"system\", \"content\": \"You are a helpful assistant.\"},\r\n        {\r\n            \"role\": \"user\",\r\n            \"content\": f'Translate the following text into English: \"{text}\". Do not directly translate, but instead translate from a third-person descriptive perspective, and complete the missing subject, predicate, object, attributive, adverbial, and complement in the text. Besides the translated result, do not include any irrelevant content or explanations in your response.',\r\n        },\r\n    ]\r\n    return await request_with_retry_async(messages)\r\n\r\n\r\nasync def translate_to_storyboard_async(text, trigger):\r\n    \"\"\"异步版本的分镜生成函数\"\"\"\r\n    messages = [\r\n        {\r\n            \"role\": \"system\",\r\n            \"content\": \"StableDiffusion is a deep learning text-to-image model that supports the generation of new images using keywords to describe the elements to be included or omitted. Now, as a professional StableDiffusion AI drawing keyword generator. You can assist me in generating keywords for my desired image.\",\r\n        },\r\n        {\"role\": \"user\", \"content\": f\"{trigger}'{text}'\"},\r\n    ]\r\n    return await request_with_retry_async(messages)\r\n\r\n\r\ndef read_docx(file_path):\r\n    return [\r\n        paragraph.text\r\n        for paragraph in Document(file_path).paragraphs\r\n        if paragraph.text.strip()\r\n    ]\r\n\r\n\r\nasync def process_text_sentences_async(\r\n    workbook,\r\n    input_file_path,\r\n    output_file_path,\r\n    trigger,\r\n    keyword_dict,\r\n    min_sentence_length,\r\n):\r\n    \"\"\"异步版本的文本处理函数\"\"\"\r\n    try:\r\n        paragraphs = read_docx(input_file_path)\r\n    except ValueError as e:\r\n        print(f\"发生错误：{str(e)}\")\r\n        return\r\n    print(paragraphs)\r\n\r\n    sentences = []\r\n    for paragraph in paragraphs:\r\n        sentences.extend([sent.text for sent in nlp(paragraph).sents])\r\n\r\n    sentences = merge_short_sentences(sentences, min_sentence_length)\r\n\r\n    original_sentences_dict = {}\r\n    sheet = workbook.active\r\n    for idx, sentence in enumerate(sentences, 1):\r\n        replaced_sentence, original_sentence = replace_keywords(sentence, keyword_dict)\r\n        original_sentences_dict[replaced_sentence] = original_sentence\r\n        sheet.cell(row=idx, column=1, value=replaced_sentence)\r\n        sheet.cell(row=idx, column=4, value=original_sentence)\r\n\r\n    replaced_sentences = list(original_sentences_dict.keys())\r\n\r\n    # 创建一个进度条计数器\r\n    translation_progress = tqdm(total=len(replaced_sentences), desc=\"正在翻译文本\")\r\n    storyboard_progress = tqdm(total=len(replaced_sentences), desc=\"正在生成分镜脚本\")\r\n\r\n    # 使用信号量限制并发请求数\r\n    sem = asyncio.Semaphore(5)  # 最多5个并发请求\r\n\r\n    async def process_sentence(idx, sentence):\r\n        \"\"\"处理单个句子的翻译和分镜生成\"\"\"\r\n        async with sem:\r\n            # 翻译步骤\r\n            translated_text = await translate_to_english_async(sentence.strip())\r\n            sheet.cell(row=idx, column=2, value=translated_text)\r\n            translation_progress.update(1)\r\n\r\n            # 分镜生成步骤\r\n            storyboard_text = await translate_to_storyboard_async(\r\n                translated_text, trigger\r\n            )\r\n            sheet.cell(row=idx, column=3, value=storyboard_text)\r\n            storyboard_progress.update(1)\r\n\r\n    # 创建所有句子的处理任务\r\n    tasks = [\r\n        process_sentence(idx, sentence)\r\n        for idx, sentence in enumerate(replaced_sentences, 1)\r\n    ]\r\n\r\n    # 执行所有任务\r\n    await asyncio.gather(*tasks)\r\n\r\n    # 关闭进度条\r\n    translation_progress.close()\r\n    storyboard_progress.close()\r\n\r\n    # 保存结果\r\n    workbook.save(output_file_path)\r\n\r\n\r\nasync def main_async():\r\n    \"\"\"异步版本的主函数\"\"\"\r\n    config = load_config()\r\n    print(\"BADAPPLE\")\r\n\r\n    role_name = config.get(\"角色名1\", \"未指定角色名\")\r\n    feature = config.get(\"特征1\", \"未指定特征\")\r\n    role2_name = config.get(\"角色名2\", \"未指定角色名2\")\r\n    feature2 = config.get(\"特征2\", \"未指定特征2\")\r\n    role3_name = config.get(\"角色名3\", \"未指定角色名3\")\r\n    feature3 = config.get(\"特征3\", \"未指定特征3\")\r\n    role4_name = config.get(\"角色名4\", \"未指定角色名4\")\r\n    feature4 = config.get(\"特征4\", \"未指定特征4\")\r\n    role5_name = config.get(\"角色名5\", \"未指定角色名5\")\r\n    feature5 = config.get(\"特征5\", \"未指定特征5\")\r\n    role6_name = config.get(\"角色名6\", \"未指定角色名6\")\r\n    feature6 = config.get(\"特征6\", \"未指定特征6\")\r\n    role7_name = config.get(\"角色名7\", \"未指定角色名7\")\r\n    feature7 = config.get(\"特征7\", \"未指定特征7\")\r\n    role8_name = config.get(\"角色名8\", \"未指定角色名8\")\r\n    feature8 = config.get(\"特征8\", \"未指定特征8\")\r\n    role9_name = config.get(\"角色名9\", \"未指定角色名9\")\r\n    feature9 = config.get(\"特征9\", \"未指定特征9\")\r\n    role10_name = config.get(\"角色名10\", \"未指定角色名10\")\r\n    feature10 = config.get(\"特征10\", \"未指定特征10\")\r\n    keyword_dict = {\r\n        role_name: feature,\r\n        role2_name: feature2,\r\n        role3_name: feature3,\r\n        role4_name: feature4,\r\n        role5_name: feature5,\r\n        role6_name: feature6,\r\n        role7_name: feature7,\r\n        role8_name: feature8,\r\n        role9_name: feature9,\r\n        role10_name: feature10,\r\n    }\r\n\r\n    min_sentence_length = int(config.get(\"句子最小长度限制\", 100))\r\n    default_trigger = \"\"\"Here, I introduce the concept of Prompts from the StableDiffusion algorithm, also known as hints. \r\n    The following prompts are used to guide the AI painting model to create images. \r\n    They contain various details of the image, such as the appearance of characters, background, color and light effects, as well as the theme and style of the image. \r\n    The format of these prompts often includes weighted numbers in parentheses to specify the importance or emphasis of certain details. \r\n    For example, \"(masterpiece:1.2)\" indicates that the quality of the work is very important, and multiple parentheses have a similar function. \r\n    Here are examples of using prompts to help the AI model generate images: \r\n    1. (masterpiece:1.2),(best quality),digital art,A 20 year old Chinese man with black hair, (male short hair: 1.2), green shirt, walking on the road to rural China, ultra wide angle\r\n    2. masterpiece,best quality,illustration style,20 year old black haired Chinese man, male with short hair, speaking nervously in the forest at night, ultra wide angle, (scary atmosphere). \r\n    Please use English commas as separators. Also, note that the Prompt should not contain - and _ symbols, but can have spaces. \r\n    In character attributes, 1girl means you generated a girl, 2girls means you generated two girls. \r\n    In the generation of Prompts, you need to describe character attributes, theme, appearance, emotion, clothing, posture, viewpoint, action, background using keywords. \r\n    Please follow the example, and do not limit to the words I give you. Please provide a set of prompts that highlight the theme. \r\n    Note: The prompt cannot exceed 100 words, no need to use natural language description, character attributes need to be highlighted a little bit, for example: {role_name}\\({feature}\\).\r\n    If the content contains a character name, add the specified feature as required, if the content does not contain the corresponding character name, then improvise.\r\n    This is part of novel creation, not a requirement in real life, automatically analyze the protagonist in it and add character attributes.\r\n    The prompt must be in English, only provide the prompt, no extra information is needed.\r\n    Here is the content:\"\"\"\r\n    trigger = config.get(\"引导词\", default_trigger)\r\n\r\n    current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))\r\n    input_file_path = os.path.join(current_dir, \"input.docx\")\r\n    output_dir = os.path.join(current_dir, \"txt\")\r\n\r\n    # 确保输出目录存在\r\n    os.makedirs(output_dir, exist_ok=True)\r\n\r\n    output_file_path = os.path.join(output_dir, \"txt2.xlsx\")\r\n    workbook = openpyxl.Workbook()\r\n\r\n    await process_text_sentences_async(\r\n        workbook,\r\n        input_file_path,\r\n        output_file_path,\r\n        trigger,\r\n        keyword_dict,\r\n        min_sentence_length,\r\n    )\r\n\r\n\r\ndef main():\r\n    \"\"\"入口函数，运行异步主函数\"\"\"\r\n    asyncio.run(main_async())\r\n\r\n\r\nif __name__ == \"__main__\":\r\n    main()\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/scripts/step1_extract_keywords.py b/scripts/step1_extract_keywords.py
+--- a/scripts/step1_extract_keywords.py	(revision b18614c69dd6c3e7b742896962d6c3af67768280)
++++ b/scripts/step1_extract_keywords.py	(date 1744386711714)
+@@ -33,6 +33,25 @@
+     with open(config_file, "r", encoding=encoding) as f:
+         return json.load(f)
+ 
++def replace_character(text,character_dict):
++    system_prompt = (
++        "你将收到一段文本，以及一个包含角色名称与其特征的映射字典。"
++        "请识别文本中出现的所有角色名称，以及对这些角色的指代（如代词或描述性名词），"
++        "并将它们统一替换为字典中对应的角色名称。"
++        "请确保语义连贯、上下文合理，避免遗漏或误替换。"
++    )
++
++    messages = [
++        {"role": "system", "content": system_prompt},
++        {
++            "role": "user",
++            "content": text
++        },
++    ]
++    return  request_with_retry_async(messages)
++
++
++
+ 
+ def replace_keywords(sentence, keyword_dict):
+     original_sentence = sentence
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"AutoImportSettings\">\r\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\r\n  </component>\r\n  <component name=\"ChangeListManager\">\r\n    <list default=\"true\" id=\"f03d818a-e448-4dd8-bdd6-87cbd7444de2\" name=\"Changes\" comment=\"\">\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/config.json\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/config.json\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/scripts/step4_output_video.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/scripts/step4_output_video.py\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/txt/txt2.xlsx\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/txt/txt2.xlsx\" afterDir=\"false\" />\r\n    </list>\r\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\r\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\r\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\r\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\r\n  </component>\r\n  <component name=\"FileTemplateManagerImpl\">\r\n    <option name=\"RECENT_TEMPLATES\">\r\n      <list>\r\n        <option value=\"Jupyter Notebook\" />\r\n        <option value=\"Python Script\" />\r\n      </list>\r\n    </option>\r\n  </component>\r\n  <component name=\"Git.Settings\">\r\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\r\n  </component>\r\n  <component name=\"ProjectColorInfo\">{\r\n  &quot;associatedIndex&quot;: 7\r\n}</component>\r\n  <component name=\"ProjectId\" id=\"2uq2ANP86qbjqwwtpAiiE8jiYWg\" />\r\n  <component name=\"ProjectViewState\">\r\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\r\n    <option name=\"showLibraryContents\" value=\"true\" />\r\n  </component>\r\n  <component name=\"PropertiesComponent\"><![CDATA[{\r\n  \"keyToString\": {\r\n    \"Python.download.executor\": \"Run\",\r\n    \"Python.step0_create_character_dictionary.executor\": \"Run\",\r\n    \"Python.step1_extract_keywords.executor\": \"Run\",\r\n    \"Python.step2_txt_to_image_high.executor\": \"Run\",\r\n    \"Python.step2_txt_to_image_high_bak.executor\": \"Run\",\r\n    \"Python.step3_txt_to_voice_kokoro.executor\": \"Run\",\r\n    \"Python.step4_output_video.executor\": \"Run\",\r\n    \"RunOnceActivity.ShowReadmeOnStart\": \"true\",\r\n    \"git-widget-placeholder\": \"master\",\r\n    \"last_opened_file_path\": \"D:/MIP/Project/Magic-Touch/Magic-Touch/scripts\",\r\n    \"node.js.detected.package.eslint\": \"true\",\r\n    \"node.js.detected.package.tslint\": \"true\",\r\n    \"node.js.selected.package.eslint\": \"(autodetect)\",\r\n    \"node.js.selected.package.tslint\": \"(autodetect)\",\r\n    \"nodejs_package_manager_path\": \"npm\",\r\n    \"settings.editor.selected.configurable\": \"com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable\",\r\n    \"vue.rearranger.settings.migration\": \"true\"\r\n  }\r\n}]]></component>\r\n  <component name=\"RecentsManager\">\r\n    <key name=\"CopyFile.RECENT_KEYS\">\r\n      <recent name=\"D:\\MIP\\Project\\Magic-Touch\\Magic-Touch\\scripts\" />\r\n    </key>\r\n  </component>\r\n  <component name=\"SharedIndexes\">\r\n    <attachedChunks>\r\n      <set>\r\n        <option value=\"bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-PY-242.23726.102\" />\r\n        <option value=\"bundled-python-sdk-5e1850174b45-399fe30bd8c1-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-242.23726.102\" />\r\n      </set>\r\n    </attachedChunks>\r\n  </component>\r\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\r\n  <component name=\"TaskManager\">\r\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\r\n      <changelist id=\"f03d818a-e448-4dd8-bdd6-87cbd7444de2\" name=\"Changes\" comment=\"\" />\r\n      <created>1742961640537</created>\r\n      <option name=\"number\" value=\"Default\" />\r\n      <option name=\"presentableId\" value=\"Default\" />\r\n      <updated>1742961640537</updated>\r\n      <workItem from=\"1742961641421\" duration=\"10000\" />\r\n      <workItem from=\"1742961686986\" duration=\"7935000\" />\r\n      <workItem from=\"1743819800087\" duration=\"36935000\" />\r\n      <workItem from=\"1744019621236\" duration=\"898000\" />\r\n      <workItem from=\"1744102263650\" duration=\"9854000\" />\r\n    </task>\r\n    <servers />\r\n  </component>\r\n  <component name=\"TypeScriptGeneratedFilesManager\">\r\n    <option name=\"version\" value=\"3\" />\r\n  </component>\r\n  <component name=\"Vcs.Log.Tabs.Properties\">\r\n    <option name=\"TAB_STATES\">\r\n      <map>\r\n        <entry key=\"MAIN\">\r\n          <value>\r\n            <State />\r\n          </value>\r\n        </entry>\r\n      </map>\r\n    </option>\r\n  </component>\r\n  <component name=\"com.intellij.coverage.CoverageDataManagerImpl\">\r\n    <SUITE FILE_PATH=\"coverage/Magic_Touch$step2_txt_to_image_high_bak.coverage\" NAME=\"step2_txt_to_image_high_bak Coverage Results\" MODIFIED=\"1743843223577\" SOURCE_PROVIDER=\"com.intellij.coverage.DefaultCoverageFileProvider\" RUNNER=\"coverage.py\" COVERAGE_BY_TEST_ENABLED=\"false\" COVERAGE_TRACING_ENABLED=\"false\" WORKING_DIRECTORY=\"$PROJECT_DIR$/scripts\" />\r\n    <SUITE FILE_PATH=\"coverage/Magic_Touch$step1_extract_keywords.coverage\" NAME=\"step1_extract_keywords Coverage Results\" MODIFIED=\"1743849220286\" SOURCE_PROVIDER=\"com.intellij.coverage.DefaultCoverageFileProvider\" RUNNER=\"coverage.py\" COVERAGE_BY_TEST_ENABLED=\"false\" COVERAGE_TRACING_ENABLED=\"false\" WORKING_DIRECTORY=\"$PROJECT_DIR$/scripts\" />\r\n    <SUITE FILE_PATH=\"coverage/Magic_Touch$download.coverage\" NAME=\"download Coverage Results\" MODIFIED=\"1743861616635\" SOURCE_PROVIDER=\"com.intellij.coverage.DefaultCoverageFileProvider\" RUNNER=\"coverage.py\" COVERAGE_BY_TEST_ENABLED=\"false\" COVERAGE_TRACING_ENABLED=\"false\" WORKING_DIRECTORY=\"$PROJECT_DIR$\" />\r\n    <SUITE FILE_PATH=\"coverage/Magic_Touch$step2_txt_to_image_high.coverage\" NAME=\"step2_txt_to_image_high Coverage Results\" MODIFIED=\"1743856920582\" SOURCE_PROVIDER=\"com.intellij.coverage.DefaultCoverageFileProvider\" RUNNER=\"coverage.py\" COVERAGE_BY_TEST_ENABLED=\"false\" COVERAGE_TRACING_ENABLED=\"false\" WORKING_DIRECTORY=\"$PROJECT_DIR$/scripts\" />\r\n    <SUITE FILE_PATH=\"coverage/Magic_Touch$step3_txt_to_voice_kokoro.coverage\" NAME=\"step3_txt_to_voice_kokoro Coverage Results\" MODIFIED=\"1743862270089\" SOURCE_PROVIDER=\"com.intellij.coverage.DefaultCoverageFileProvider\" RUNNER=\"coverage.py\" COVERAGE_BY_TEST_ENABLED=\"false\" COVERAGE_TRACING_ENABLED=\"false\" WORKING_DIRECTORY=\"$PROJECT_DIR$/scripts\" />\r\n    <SUITE FILE_PATH=\"coverage/Magic_Touch$step0_create_character_dictionary.coverage\" NAME=\"step0_create_character_dictionary Coverage Results\" MODIFIED=\"1743834361553\" SOURCE_PROVIDER=\"com.intellij.coverage.DefaultCoverageFileProvider\" RUNNER=\"coverage.py\" COVERAGE_BY_TEST_ENABLED=\"false\" COVERAGE_TRACING_ENABLED=\"false\" WORKING_DIRECTORY=\"$PROJECT_DIR$/scripts\" />\r\n    <SUITE FILE_PATH=\"coverage/Magic_Touch$step4_output_video.coverage\" NAME=\"step4_output_video Coverage Results\" MODIFIED=\"1744104701381\" SOURCE_PROVIDER=\"com.intellij.coverage.DefaultCoverageFileProvider\" RUNNER=\"coverage.py\" COVERAGE_BY_TEST_ENABLED=\"false\" COVERAGE_TRACING_ENABLED=\"false\" WORKING_DIRECTORY=\"$PROJECT_DIR$/scripts\" />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision b18614c69dd6c3e7b742896962d6c3af67768280)
++++ b/.idea/workspace.xml	(date 1744386711675)
+@@ -7,8 +7,10 @@
+     <list default="true" id="f03d818a-e448-4dd8-bdd6-87cbd7444de2" name="Changes" comment="">
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/config.json" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/scripts/step4_output_video.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step4_output_video.py" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/txt/txt2.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/txt/txt2.xlsx" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/scripts/step0_create_character_dictionary.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step0_create_character_dictionary.ipynb" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/scripts/step0_create_character_dictionary.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step0_create_character_dictionary.py" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/scripts/step1_extract_keywords.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step1_extract_keywords.py" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/scripts/角色信息.json" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/角色信息.json" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+@@ -34,27 +36,27 @@
+     <option name="hideEmptyMiddlePackages" value="true" />
+     <option name="showLibraryContents" value="true" />
+   </component>
+-  <component name="PropertiesComponent"><![CDATA[{
+-  "keyToString": {
+-    "Python.download.executor": "Run",
+-    "Python.step0_create_character_dictionary.executor": "Run",
+-    "Python.step1_extract_keywords.executor": "Run",
+-    "Python.step2_txt_to_image_high.executor": "Run",
+-    "Python.step2_txt_to_image_high_bak.executor": "Run",
+-    "Python.step3_txt_to_voice_kokoro.executor": "Run",
+-    "Python.step4_output_video.executor": "Run",
+-    "RunOnceActivity.ShowReadmeOnStart": "true",
+-    "git-widget-placeholder": "master",
+-    "last_opened_file_path": "D:/MIP/Project/Magic-Touch/Magic-Touch/scripts",
+-    "node.js.detected.package.eslint": "true",
+-    "node.js.detected.package.tslint": "true",
+-    "node.js.selected.package.eslint": "(autodetect)",
+-    "node.js.selected.package.tslint": "(autodetect)",
+-    "nodejs_package_manager_path": "npm",
+-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+-    "vue.rearranger.settings.migration": "true"
++  <component name="PropertiesComponent">{
++  &quot;keyToString&quot;: {
++    &quot;Python.download.executor&quot;: &quot;Run&quot;,
++    &quot;Python.step0_create_character_dictionary.executor&quot;: &quot;Run&quot;,
++    &quot;Python.step1_extract_keywords.executor&quot;: &quot;Run&quot;,
++    &quot;Python.step2_txt_to_image_high.executor&quot;: &quot;Run&quot;,
++    &quot;Python.step2_txt_to_image_high_bak.executor&quot;: &quot;Run&quot;,
++    &quot;Python.step3_txt_to_voice_kokoro.executor&quot;: &quot;Run&quot;,
++    &quot;Python.step4_output_video.executor&quot;: &quot;Run&quot;,
++    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
++    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
++    &quot;last_opened_file_path&quot;: &quot;D:/MIP/Project/Magic-Touch/Magic-Touch/scripts&quot;,
++    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
++    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
++    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
++    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
++    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
++    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
++    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+   }
+-}]]></component>
++}</component>
+   <component name="RecentsManager">
+     <key name="CopyFile.RECENT_KEYS">
+       <recent name="D:\MIP\Project\Magic-Touch\Magic-Touch\scripts" />
+@@ -81,6 +83,7 @@
+       <workItem from="1743819800087" duration="36935000" />
+       <workItem from="1744019621236" duration="898000" />
+       <workItem from="1744102263650" duration="9854000" />
++      <workItem from="1744375376465" duration="10570000" />
+     </task>
+     <servers />
+   </component>
+@@ -104,7 +107,7 @@
+     <SUITE FILE_PATH="coverage/Magic_Touch$download.coverage" NAME="download Coverage Results" MODIFIED="1743861616635" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+     <SUITE FILE_PATH="coverage/Magic_Touch$step2_txt_to_image_high.coverage" NAME="step2_txt_to_image_high Coverage Results" MODIFIED="1743856920582" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
+     <SUITE FILE_PATH="coverage/Magic_Touch$step3_txt_to_voice_kokoro.coverage" NAME="step3_txt_to_voice_kokoro Coverage Results" MODIFIED="1743862270089" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
+-    <SUITE FILE_PATH="coverage/Magic_Touch$step0_create_character_dictionary.coverage" NAME="step0_create_character_dictionary Coverage Results" MODIFIED="1743834361553" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
++    <SUITE FILE_PATH="coverage/Magic_Touch$step0_create_character_dictionary.coverage" NAME="step0_create_character_dictionary Coverage Results" MODIFIED="1744381134348" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
+     <SUITE FILE_PATH="coverage/Magic_Touch$step4_output_video.coverage" NAME="step4_output_video Coverage Results" MODIFIED="1744104701381" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
+   </component>
+ </project>
+\ No newline at end of file
