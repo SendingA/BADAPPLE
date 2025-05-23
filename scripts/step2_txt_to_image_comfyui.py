@@ -8,7 +8,6 @@ import io
 import random
 import urllib.request
 import urllib.parse
-from distutils.command.config import config
 
 import websocket  # pip install websocket-client
 import openpyxl

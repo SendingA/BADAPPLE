@@ -277,7 +277,7 @@ async def main_async():
     # 确保输出目录存在
     os.makedirs(output_dir, exist_ok=True)
 
-    output_file_path = os.path.join(output_dir, "txt2.xlsx")
+    output_file_path = os.path.join(output_dir, "output.xlsx")
     workbook = openpyxl.Workbook()
 
     # await process_text_sentences_async(
