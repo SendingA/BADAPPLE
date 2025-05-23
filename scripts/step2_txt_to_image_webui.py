@@ -172,6 +172,30 @@ def run_webui_program(
                                 "model": "ip-adapter_sd15_plus [32cd8f7f]",
                             }
                         ]
+                    },
+                    "Regional Prompter": {
+                        "args": [
+                            True,                  # 1  Active
+                            False,                 # 2  debug
+                            "Matrix",              # 3  Mode
+                            "Vertical",            # 4  Mode (Matrix)
+                            "Mask",                # 5  Mode (Mask)
+                            "Prompt",              # 6  Mode (Prompt)
+                            "1,1,1",               # 7  Ratios
+                            "",                    # 8  Base Ratios
+                            False,                 # 9  Use Base
+                            False,                 # 10 Use Common
+                            False,                 # 11 Use Neg-Common
+                            "Attention",           # 12 Calcmode
+                            False,                 # 13 Not Change AND
+                            "0",                   # 14 LoRA Textencoder
+                            "0",                   # 15 LoRA U-Net
+                            "0",                   # 16 Threshold
+                            "",                    # 17 Mask (图片路径)
+                            "0",                   # 18 LoRA stop step
+                            "0",                   # 19 LoRA Hires stop step
+                            False                  # 20 flip
+                        ]
                     }
                 }
             )
