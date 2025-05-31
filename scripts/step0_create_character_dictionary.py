@@ -199,15 +199,16 @@ def save_scenarios(scenarios_json):
     df = pd.DataFrame(rows)
     df.to_csv('../txt/txt.csv', index=False)
 
+def main(text: str):
+    scenarios = divide_scenarios(text)
+    save_scenarios(scenarios)
+    character_info = extract_character_features(text)
+    update_config_with_characters(character_info)
 
 if __name__ == '__main__':
     print("BADAPPLE")
     with open("../input.txt", "r", encoding="utf-8") as file:
         text = file.read()
-        scenarios = divide_scenarios(text)
-        # print(scenarios)
-        save_scenarios(scenarios)
-        character_info = extract_character_features(text)
-        # print(character_info)
-        update_config_with_characters(character_info)
+    
+    main(text)
 
