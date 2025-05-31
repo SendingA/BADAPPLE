@@ -6,10 +6,9 @@ import sys
 from pathlib import Path
 
 # 添加当前目录和 scripts 目录到 Python 路径
-current_dir = Path(__file__).parent
-project_dir = current_dir.parent
-scripts_dir = current_dir / "scripts"
-sys.path.append(str(current_dir))
+project_dir = Path(__file__).parent.parent
+scripts_dir = project_dir / "scripts"
+sys.path.append(str(project_dir))
 sys.path.append(str(scripts_dir))
 
 # 导入各个步骤的模块
@@ -66,12 +65,12 @@ def run_step1(input_file, min_sentence_length, trigger_word, api_key):
         
         # 如果有上传文件，保存为 input.docx
         if input_file:
-            input_path = current_dir / "input.docx"
+            input_path = project_dir / "input.docx"
             with open(input_path, 'wb') as f:
                 f.write(input_file)
         
         # 更新配置
-        config_path = current_dir / "config.json"
+        config_path = project_dir / "config.json"
         if config_path.exists():
             with open(config_path, 'r', encoding='utf-8') as f:
                 config = json.load(f)
@@ -99,7 +98,7 @@ def run_step2(webui_url, width, height, steps, sampler, scheduler, cfg_scale, se
             os.environ["WEBUI_SERVER_URL"] = webui_url
         
         # 更新配置
-        config_path = current_dir / "config.json"
+        config_path = project_dir / "config.json"
         if config_path.exists():
             with open(config_path, 'r', encoding='utf-8') as f:
                 config = json.load(f)
@@ -129,7 +128,7 @@ def run_step2(webui_url, width, height, steps, sampler, scheduler, cfg_scale, se
         
         # 处理控制图
         if control_image:
-            control_path = current_dir / "control_image.png"
+            control_path = project_dir / "control_image.png"
             control_image.save(control_path)
         
         result = step2_main()
@@ -143,8 +142,8 @@ def run_step3(input_file, output_dir, language, gender):
     try:
         # 准备参数
         args = [
-            "--input_file", input_file or str(current_dir / "scripts" / "场景分割.json"),
-            "--output_dir", output_dir or str(current_dir / "voice"),
+            "--input_file", input_file or str(project_dir / "scripts" / "场景分割.json"),
+            "--output_dir", output_dir or str(project_dir / "voice"),
             "--language", language,
             "--gender", gender
         ]
@@ -504,7 +503,7 @@ with gr.Blocks(title="小说转视频生成器", theme=gr.themes.Soft()) as demo
 if __name__ == "__main__":
     demo.launch(
         server_name="0.0.0.0",
-        server_port=7777,
+        server_port=7870,
         share=False,
         debug=True
     )

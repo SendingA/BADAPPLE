@@ -11,8 +11,8 @@ from tqdm import tqdm
 import pandas
 
 openai = AsyncOpenAI(
-    api_key="sk-db3f839bc51e459dae3aab49d1a779e2",
-    base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+    api_key="sk-883af3c325b140c3986f45704410f614",
+    base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"
 )
 
 # openai = AsyncOpenAI(
@@ -280,14 +280,14 @@ async def main_async():
     output_file_path = os.path.join(output_dir, "output.xlsx")
     workbook = openpyxl.Workbook()
 
-    # await process_text_sentences_async(
-    #     workbook,
-    #     input_file_path,
-    #     output_file_path,
-    #     trigger,
-    #     keyword_dict,
-    #     min_sentence_length,
-    # )
+    await process_text_sentences_async(
+        workbook,
+        input_file_path,
+        output_file_path,
+        trigger,
+        keyword_dict,
+        min_sentence_length,
+    )
     ##打开txt.csv文件
     scenarios: pandas.DataFrame = pandas.read_csv("../txt/txt.csv")
     with open('角色信息.json', encoding="utf-8") as f:
