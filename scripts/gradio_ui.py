@@ -158,7 +158,7 @@ def run_step4(fps, enlarge_background, enable_effect, effect_type):
     """执行 Step 4: 输出视频"""
     try:
         # 更新配置
-        config_path = current_dir / "config.json"
+        config_path = project_dir / "config.json"
         if config_path.exists():
             with open(config_path, 'r', encoding='utf-8') as f:
                 config = json.load(f)
