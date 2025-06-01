@@ -63,7 +63,7 @@ def load_existing_audio():
         result_text = f"✅ 找到 {len(audio_files)} 个音频文件\n"
         result_text += "现有文件:\n"
         for i, file_path in enumerate(audio_files):
-            result_text += f"  {i+1}. {os.path.basename(file_path)}\n"
+            result_text += f"{os.path.basename(file_path)}\n"
         
         return result_text, first_audio, audio_files
         

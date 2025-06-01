@@ -48,7 +48,7 @@ logging.basicConfig(
 
 # WebUI 服务器地址列表，支持多个服务器
 DEFAULT_SERVERS = [
-    f"http://172.18.36.54:{port}" for port in range(7860, 7870)
+    f"http://172.18.36.54:{port}" for port in range(7860, 7860 + 8)
 ]
 SERVER_URLS: list[str] = []
 
@@ -91,7 +91,7 @@ def get_prompts(path: str) -> list[str]:
 
     wb = openpyxl.load_workbook(path)
     sheet = wb.active
-    prompts = [cell.value for cell in sheet["C"] if cell.value]
+    prompts = [cell.value for cell in sheet["D"] if cell.value][1:]
     wb.close()
     return prompts
 

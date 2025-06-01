@@ -10,6 +10,7 @@ import asyncio
 import tqdm
 import argparse
 import json
+import re
 
 class SpeechProvider:
     def __init__(self, gender, language):
@@ -38,42 +39,75 @@ class SpeechProvider:
         return next(self.en_pipeline(text)).phonemes
 
     def speed_callable(self,len_ps):
-        speed = 0.82
-        if len_ps <= 100:
-            speed = 1
-        elif len_ps < 200:
-            speed = 1 - (len_ps - 100) / 500
-        return speed * 1.1
+        speed = 1
+        return speed 
 
     def get_tts_audio(self, message):
-        wavs = []
+        wavs_tot = []
+        durations = []  # 添加时长记录
+        
         for paragraph in tqdm.tqdm(message, desc="正在生成配音音频", unit="paragraphs"):
+            wavs_para = []
+            sentence_durations = []  # 记录每个句子的时长
+            
             for i, sentence in enumerate(paragraph):
+                # print(f"正在处理句子: {sentence}")
                 generator = self.zh_pipeline(sentence, voice=self.VOICE, speed=self.speed_callable)
                 result = next(generator)
                 wav = result.audio
-                if i == 0 and wavs and self.N_ZEROS > 0:
+                
+                # 计算当前句子的时长（秒）
+                sentence_duration = len(wav) / self.SAMPLE_RATE
+                sentence_durations.append(sentence_duration)
+                
+                if i == 0 and wavs_tot and self.N_ZEROS > 0:
                     wav = np.concatenate([np.zeros(self.N_ZEROS), wav])
-                wavs.append(wav)
+                    # 添加静音时长
+                    sentence_durations[-1] += self.N_ZEROS / self.SAMPLE_RATE
+                    
+                if i == 0:
+                    wavs_para = wav
+                else:
+                    wavs_para = np.concatenate([wavs_para, wav])
+                    
+            wavs_tot.append(wavs_para)
+            durations.append(sentence_durations)
 
-        return 'wav', wavs
+        return 'wav', wavs_tot, durations
 
 def convert_text_to_audio(tasks, language, output_path, gender):
     if not tasks:
-        return False, []
+        return False
 
     provider = SpeechProvider(gender, language)
-    wav_format, wavs = provider.get_tts_audio(tasks)
+    wav_format, wavs, durations = provider.get_tts_audio(tasks)
+    
     if wav_format != 'wav':
         raise ValueError("Unsupported audio format")
-    
+        
+    # 保存音频文件和时长信息
+    timing_info = {}
     audio_files = []
     if wavs is not None:
-        for index, wav in enumerate(wavs):
+        for index, (wav_para, duration_list) in enumerate(zip(wavs, durations)):
             wav_file_path = os.path.join(output_path, f"output_{index}.wav")
-            sf.write(f"{wav_file_path}", wav, provider.SAMPLE_RATE)
+            sf.write(wav_file_path, wav_para, provider.SAMPLE_RATE)
             audio_files.append(wav_file_path)
+            
+            # 记录时长信息
+            total_duration = len(wav_para) / provider.SAMPLE_RATE
+            timing_info[f"output_{index}"] = {
+                "total_duration": total_duration,
+                "sentence_durations": duration_list,
+                "sample_rate": provider.SAMPLE_RATE
+            }
     
+    # 保存时长信息到JSON文件
+    timing_file = os.path.join(output_path, "audio_timing.json")
+    with open(timing_file, 'w', encoding='utf-8') as f:
+        json.dump(timing_info, f, indent=2, ensure_ascii=False)
+    
+    print(f"✅ 音频时长信息已保存到: {timing_file}")
     return True, audio_files
 
 def process_text_files(input_file, output_dir, language, gender):
@@ -82,29 +116,59 @@ def process_text_files(input_file, output_dir, language, gender):
         data = json.load(f)
     scenarios = [item["内容"] for item in data.values()]
     tasks = []
-    for scenario in scenarios:
-        tasks.append((scenario,))
-    success, audio_files = convert_text_to_audio(tasks, language, output_dir, gender)
-    return success, audio_files
+    sentence_mapping = []  # 记录句子与原文的映射关系
+    
+    for scenario_idx, scenario in enumerate(scenarios):
+        print("="*50)
+        # 先处理双引号包裹的句子
+        quote_pattern = r'“([^”]*[。！？])”'
+        quotes = re.findall(quote_pattern, scenario)
+        
+        # 将双引号内容替换为占位符
+        temp_scenario = scenario
+        placeholders = {}
+        for i, quote in enumerate(quotes):
+            placeholder = f"__QUOTE_{i}__"
+            placeholders[placeholder] = quote
+            temp_scenario = temp_scenario.replace(f'“{quote}”', placeholder)
+
+        sentences = re.split(r'([。！？.!?])', temp_scenario)
+        processed_sentences = []
+        
+        for i in range(0, len(sentences), 2):
+            if i < len(sentences):
+                s = sentences[i].strip()
+                if s:
+                    # 添加标点符号（如果存在）
+                    if i + 1 < len(sentences) and sentences[i + 1]:
+                        s += sentences[i + 1]
+                    for placeholder, quote in placeholders.items():
+                        s = s.replace(placeholder, f'“{quote}”')
+                    processed_sentences.append(s)
+
+        if processed_sentences:
+            tasks.append(tuple(processed_sentences))
+            sentence_mapping.append({
+                "scenario_index": scenario_idx,
+                "original_text": scenario,
+                "processed_sentences": processed_sentences
+            })
+    
+    # 保存句子映射信息
+    mapping_file = os.path.join(output_dir, "sentence_mapping.json")
+    with open(mapping_file, 'w', encoding='utf-8') as f:
+        json.dump(sentence_mapping, f, indent=2, ensure_ascii=False)
+    
+    print(f"✅ 句子映射信息已保存到: {mapping_file}")
+    
+    return convert_text_to_audio(tasks, language, output_dir, gender)
+
 
 def main(input_file, output_dir, language, gender):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     return process_text_files(input_file, output_dir, language, gender)
 
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Text to Speech Converter')
-    script_dir = os.path.dirname(os.path.realpath(__file__))
-
-    default_input_file = os.path.join(script_dir, "..", "scripts", "场景分割.json")
-    default_output_dir = os.path.join(script_dir, "..", "voice")
-
-
-    parser.add_argument('--input_file', type=str, default=default_input_file, help='输入文本文件的路径')
-    parser.add_argument('--output_dir', type=str, default=default_output_dir, help='输出目录的路径')
-    parser.add_argument('--language', type=str, default="zh", help='文本的语言')
-    parser.add_argument('--gender', type=str, default="zf", help='声音的性别')
-    args = parser.parse_args()
-
-    process_text_files(args.input_file, args.output_dir, args.language, args.gender)
-
+    main()
