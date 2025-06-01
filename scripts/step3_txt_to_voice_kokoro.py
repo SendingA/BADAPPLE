@@ -83,6 +83,11 @@ def process_text_files(input_file, output_dir, language, gender):
     convert_text_to_audio(tasks, language, output_dir, gender)
 
 
+def main(input_file, output_dir, language, gender):
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    process_text_files(input_file, output_dir, language, gender)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Text to Speech Converter')
     script_dir = os.path.dirname(os.path.realpath(__file__))

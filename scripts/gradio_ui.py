@@ -33,13 +33,13 @@ def run_step3(input_file, output_dir, language, gender):
     try:
         # 准备参数
         args = [
-            "--input_file", input_file or str(project_dir / "scripts" / "场景分割.json"),
-            "--output_dir", output_dir or str(project_dir / "voice"),
-            "--language", language,
-            "--gender", gender
+            input_file or str(project_dir / "scripts" / "场景分割.json"),
+            output_dir or str(project_dir / "voice"),
+            language,
+            gender
         ]
         
-        result = step3_main()
+        result = step3_main(*args)
         return "✅ Step 3 完成：语音生成完成"
         
     except Exception as e:
