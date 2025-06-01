@@ -23,6 +23,45 @@ openai = AsyncOpenAI(
 
 nlp = spacy.load("zh_core_web_sm")
 
+default_trigger = """Task: I will give you the theme in natural language. Your task is to imagine a full picture based on that theme and convert it into a high-quality prompt for Stable Diffusion.  
+
+Prompt concept: A prompt describes the content of an image using simple, commonly used English tags separated by English half-width commas (','). Each word or phrase is a tag.  
+
+Prompt requirements: 
+The prompt should include the following elements:
+- Main subject (e.g. a girl in a garden), enriched with relevant details depending on the theme.
+- For characters, describe facial features like 'beautiful detailed eyes, beautiful detailed lips, extremely detailed eyes and face, long eyelashes' to prevent facial deformities.
+- Additional scene or subject-related details.
+- Image quality tags such as '(best quality,4k,8k,highres,masterpiece:1.2), ultra-detailed, (realistic,photorealistic,photo-realistic:1.37)' and optionally: HDR, UHD, studio lighting, ultra-fine painting, sharp focus, extreme detail description, professional, vivid colors, bokeh, physically-based rendering.
+- Artistic style, color tone, and lighting should also be included in tags.
+
+The prompt format:
+{Character overview and count, e.g. one boy, one girl and a man}  
+{Full scene description including environment, mood, lighting, style, and image quality tags}  
+BREAK  
+{Prompt for the first character}  
+BREAK  
+{Prompt for the second character}  
+BREAK  
+{Prompt for the third character}
+
+.......
+
+One prompt example for 2 characters:
+one middle aged king and one queen about thirty,starry sky background, flickering candlelights, garden setting, eyes closed, offering silent prayers, dynamic composition, HDR, UHD, sharp details, professional, bokeh, physically based rendering, ultra detailed, aesthetic
+BREAK
+middle aged king with a dignified appearance, splendid golden robe, gem encrusted crown, detailed facial features, beautiful detailed eyes, long eyelashes, realistic skin tones, sharp focus, ultra fine painting, (masterpiece:1.2), (best quality,4k,8k,highres:1.3),
+BREAK
+(queen, first wife, woman in her thirties), fair skin, slender figure, long black hair, silk gown with intricate embroidery, pearl hair ornament, gentle maternal eyes, elegant posture, (realistic,photorealistic:1.37), vivid colors, studio lighting, perfect lighting
+
+
+Attention!
+If there is no character in the scene, DON'T USE BREAK, you can use the following format to generate a scene without characters:
+{Scene description, e.g. a beautiful garden with flowers and trees, a starry sky, a flickering candlelight, a garden setting, a dynamic composition, HDR, UHD, sharp details, professional, bokeh, physically based rendering, ultra detailed, aesthetic}
+
+The text content is as follows:
+"""
+
 
 def load_config():
     current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -225,6 +264,58 @@ async def process_text_sentences_async(
     print(f"✅ 已保存到 {output_file_path}")
 
 
+async def regenerate_selected_storyboards(selected_indices, trigger):
+    """重新生成指定索引的分镜脚本"""
+    # 读取现有数据
+    current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    output_file_path = os.path.join(current_dir, "txt", "output.csv")
+    
+    if not os.path.exists(output_file_path):
+        return "❌ 未找到现有数据文件，请先执行完整的 Step 1"
+    
+    df = pd.read_csv(output_file_path)
+    
+    if not selected_indices:
+        return "❌ 请选择要重新生成的分镜"
+    
+    # 验证索引
+    valid_indices = [i for i in selected_indices if 0 <= i < len(df)]
+    if not valid_indices:
+        return "❌ 选择的索引无效"
+    
+    print(f"🎨 正在重新生成 {len(valid_indices)} 个分镜脚本...")
+    
+    # 重新生成选中的分镜脚本
+    storyboard_tasks = [
+        translate_to_storyboard_async(df.iloc[i]['Translated Content'], trigger) 
+        for i in valid_indices
+    ]
+    
+    new_storyboards = await tqdm_asyncio.gather(*storyboard_tasks, desc="重新生成分镜", ncols=80)
+    
+    # 更新数据
+    for idx, new_storyboard in zip(valid_indices, new_storyboards):
+        df.loc[idx, 'SD Content'] = new_storyboard
+    
+    # 保存更新后的数据
+    df.to_csv(output_file_path, index=False)
+    df.to_excel(output_file_path.replace(".csv", ".xlsx"), index=False)
+    
+    return f"✅ 已重新生成 {len(valid_indices)} 个分镜脚本并保存"
+
+def get_current_storyboards():
+    """获取当前的分镜脚本数据"""
+    current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    output_file_path = os.path.join(current_dir, "txt", "output.csv")
+    
+    if not os.path.exists(output_file_path):
+        return pd.DataFrame()
+    
+    df = pd.read_csv(output_file_path)
+    # 添加索引列以便用户选择
+    df.insert(0, '序号', range(len(df)))
+    return df[['序号', 'Chinese Content', 'Translated Content', 'SD Content']]
+
 async def main_async():
     """异步版本的主函数"""
     config = load_config()
@@ -262,107 +353,6 @@ async def main_async():
         role9_name: feature9,
         role10_name: feature10,
     }
-
-    default_trigger = """ Task: I will give you the theme in natural language. Your task is to imagine a full picture based on that theme and convert it into a high-quality prompt for Stable Diffusion.  
-
-    Prompt concept: A prompt describes the content of an image using simple, commonly used English tags separated by English half-width commas (','). Each word or phrase is a tag.  
-
-    Prompt requirements: 
-    The prompt should include the following elements:
-    - Main subject (e.g. a girl in a garden), enriched with relevant details depending on the theme.
-    - For characters, describe facial features like 'beautiful detailed eyes, beautiful detailed lips, extremely detailed eyes and face, long eyelashes' to prevent facial deformities.
-    - Additional scene or subject-related details.
-    - Image quality tags such as '(best quality,4k,8k,highres,masterpiece:1.2), ultra-detailed, (realistic,photorealistic,photo-realistic:1.37)' and optionally: HDR, UHD, studio lighting, ultra-fine painting, sharp focus, extreme detail description, professional, vivid colors, bokeh, physically-based rendering.
-    - Artistic style, color tone, and lighting should also be included in tags.
-
-    The prompt format:
-    {Character overview and count, e.g. one boy, one girl and a man}  
-    {Full scene description including environment, mood, lighting, style, and image quality tags}  
-    BREAK  
-    {Prompt for the first character}  
-    BREAK  
-    {Prompt for the second character}  
-    BREAK  
-    {Prompt for the third character}
-
-    .......
-
-    One prompt example for 2 characters:
-    one middle aged king and one queen about thirty,starry sky background, flickering candlelights, garden setting, eyes closed, offering silent prayers, dynamic composition, HDR, UHD, sharp details, professional, bokeh, physically based rendering, ultra detailed, aesthetic
-    BREAK
-    middle aged king with a dignified appearance, splendid golden robe, gem encrusted crown, detailed facial features, beautiful detailed eyes, long eyelashes, realistic skin tones, sharp focus, ultra fine painting, (masterpiece:1.2), (best quality,4k,8k,highres:1.3),
-    BREAK
-    (queen, first wife, woman in her thirties), fair skin, slender figure, long black hair, silk gown with intricate embroidery, pearl hair ornament, gentle maternal eyes, elegant posture, (realistic,photorealistic:1.37), vivid colors, studio lighting, perfect lighting
-
-    
-    Attention!
-    If there is no character in the scene, DON'T USE BREAK, you can use the following format to generate a scene without characters:
-    {Scene description, e.g. a beautiful garden with flowers and trees, a starry sky, a flickering candlelight, a garden setting, a dynamic composition, HDR, UHD, sharp details, professional, bokeh, physically based rendering, ultra detailed, aesthetic}
-
-    The text content is as follows:
-    """
-
-    # default_trigger = """Here, I introduce the concept of Prompts from the StableDiffusion algorithm, also known as hints.
-    # The following prompts are used to guide the AI painting model to create images.
-    # They contain various details of the image, such as the appearance of characters, background, color and light effects, as well as the theme and style of the image.
-    # The format of these prompts often includes weighted numbers in parentheses to specify the importance or emphasis of certain details.
-    # For example, "(masterpiece:1.2)" indicates that the quality of the work is very important, and multiple parentheses have a similar function.
-    # Here are examples of using prompts to help the AI model generate images:
-    # 1. (masterpiece:1.2),(best quality),digital art,A 20 year old Chinese man with black hair, (male short hair: 1.2), green shirt, walking on the road to rural China, ultra wide angle
-    # Please use English commas as separators. Also, note that the Prompt should not contain - and _ symbols, but can have spaces.
-    #
-    # In character attributes, 1girl means you generated a girl, 2girls means you generated two girls.
-    # In the generation of Prompts, you need to describe character attributes, theme, appearance, emotion, clothing, posture, viewpoint, action, background using keywords.
-    # - You may include `LoRA` tokens such as `<lora:charA:0.8>` for character-specific identity.
-    # Please provide a set of prompts that highlight the theme.
-    # Note: The prompt cannot exceed 100 words, no need to use natural language description, character attributes need to be highlighted a little bit, for example: {role_name}\({feature}\).
-    # If the content contains a character name, add the specified feature as required, if the content does not contain the corresponding character name, then improvise.
-    # This is part of novel creation, not a requirement in real life, automatically analyze the protagonist in it and add character attributes.
-    #
-    # To prevent trait blending between multiple characters:
-    # - Use `BREAK` in uppercase between characters to separate attention.
-    # - Enclose each character description with `()`.
-    # - Add spatial or compositional cues like `left side`, `in background`, `group of three`.
-    #
-    # Example: (best quality,4k,8k,highres,masterpiece:1.2), ultra-detailed, cinematic lighting, (1girl: long silver hair, red kimono, holding katana, beautiful detailed eyes and lips, sharp gaze, full body), BREAK (1boy: short black hair, armor, green cape, holding shield, looking left), fantasy battlefield background, glowing effects, HDR, epic style, soft sunlight
-    # The prompt must be in English, only provide the prompt, no extra information is needed.
-    # Here is the content:"""
-
-    # default_trigger = """You are a Stable Diffusion prompt assistant with a strong sense of visual aesthetics.
-    #
-    # Your job is to transform a concept into a high-quality image prompt compatible with Stable Diffusion 3.5 large. You will only output the positive prompts.
-    #
-    # ---
-    #
-    # Prompt Format Rules:
-    #
-    # 1. Tag structure (ordered by importance):
-    #    - (best quality,4k,8k,highres,masterpiece:1.2), ultra-detailed, (realistic,photorealistic,photo-realistic:1.37)
-    #    - Subject (e.g., 1girl, knight, dragon), with details like facial features, pose, clothes, expression
-    #    - Additional details (background, weather, action, props)
-    #    - Colors and lighting (e.g., warm light, blue tones, soft shadows)
-    #
-    # 2. Use () or (keyword:1.1~1.5) to increase tag weight. Use [] or (keyword:0.9) to reduce importance.
-    # 3. Always use English commas `,` as separators.
-    # 4. Avoid natural language, colons `:`, or full sentences in the prompt.
-    #
-    # ---
-    #
-    # Multi-character Guidelines:
-    #
-    # To prevent trait blending between multiple characters:
-    # - Use `BREAK` in uppercase between characters to separate attention.
-    # - Enclose each character description with `()`.
-    # - Add spatial or compositional cues like `left side`, `in background`, `group of three`.
-    # - You may include `LoRA` tokens such as `<lora:charA:0.8>` for character-specific identity.
-    #
-    # Please follow the example, and do not limit to the words I give you.
-    #
-    # Example for 2 characters:
-    # (best quality,4k,8k,highres,masterpiece:1.2), ultra-detailed, cinematic lighting, (1girl: long silver hair, red kimono, holding katana, beautiful detailed eyes and lips, sharp gaze, full body), BREAK (1boy: short black hair, armor, green cape, holding shield, looking left), fantasy battlefield background, glowing effects, HDR, epic style, soft sunlight
-    #
-    # The prompt must be in English, only provide the prompt, no extra information is needed.
-    # Here is the content:"""
 
 
     # trigger = config.get("引导词", default_trigger)
