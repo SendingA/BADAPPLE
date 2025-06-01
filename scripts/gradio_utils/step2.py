@@ -13,17 +13,38 @@ from step2_txt_to_image_webui import (
     run_webui_program, 
     get_generated_images, 
     regenerate_images,
-    SERVER_URL
+    set_server_urls,
+    get_available_servers,
+    SERVER_URLS
 )
 
-def run_step2(webui_url, width, height, steps, sampler, scheduler, cfg_scale, seed, 
-              enable_hr, hr_scale, hr_upscaler, denoising_strength, 
+def test_servers(server_urls_text):
+    """测试服务器连接状态"""
+    if not server_urls_text.strip():
+        return "请输入服务器地址"
+    
+    urls = [url.strip() for url in server_urls_text.split('\n') if url.strip()]
+    set_server_urls(urls)
+    
+    available = get_available_servers()
+    
+    result = f"测试完成！\n总共: {len(urls)} 个服务器\n可用: {len(available)} 个服务器\n\n"
+    
+    for url in urls:
+        status = "✅ 可用" if url in available else "❌ 不可用"
+        result += f"{url} - {status}\n"
+    
+    return result
+
+def run_step2(server_urls_text, max_workers, width, height, steps, sampler, scheduler, 
+              cfg_scale, seed, enable_hr, hr_scale, hr_upscaler, denoising_strength, 
               more_details, negative_prompt, control_image):
-    """执行 Step 2: 文本转图像"""
+    """执行 Step 2: 文本转图像（多服务器版本）"""
     try:
-        # 设置环境变量
-        if webui_url:
-            os.environ["WEBUI_SERVER_URL"] = webui_url.rstrip("/")
+        # 设置服务器列表
+        if server_urls_text.strip():
+            urls = [url.strip() for url in server_urls_text.split('\n') if url.strip()]
+            set_server_urls(urls)
         
         # 更新配置
         config_path = project_dir / "config.json"
@@ -33,7 +54,7 @@ def run_step2(webui_url, width, height, steps, sampler, scheduler, cfg_scale, se
                 config = json.load(f)
         
         # 更新图像生成参数
-        config.update({
+        extra_params = {
             "width": width,
             "height": height,
             "steps": steps,
@@ -45,7 +66,9 @@ def run_step2(webui_url, width, height, steps, sampler, scheduler, cfg_scale, se
             "hr_scale": hr_scale,
             "hr_upscaler": hr_upscaler,
             "denoising_strength": denoising_strength
-        })
+        }
+        
+        config.update(extra_params)
         
         if more_details:
             config["more_details"] = more_details
@@ -56,12 +79,18 @@ def run_step2(webui_url, width, height, steps, sampler, scheduler, cfg_scale, se
             json.dump(config, f, ensure_ascii=False, indent=2)
         
         # 处理控制图
+        control_path = None
         if control_image:
             control_path = project_dir / "control_image.png"
             control_image.save(control_path)
+            control_path = str(control_path)
         
-        # 执行生成
-        run_webui_program()
+        # 执行生成（并行）
+        run_webui_program(
+            extra_params=extra_params,
+            control_image=control_path,
+            max_workers=max_workers
+        )
         
         # 刷新图片展示
         return "✅ Step 2 完成：图像生成完成", update_image_gallery()
@@ -142,18 +171,36 @@ def handle_regenerate(selected_indices_str):
 def create_interface():
     """创建 Step 2 界面"""
     with gr.TabItem("🎨 Step 2: 图像生成"):
-        gr.Markdown("### 根据提示词生成场景图像")
+        gr.Markdown("### 根据提示词生成场景图像（支持多服务器并行）")
         
         with gr.Row():
             # 左侧：生成参数
             with gr.Column(scale=1):
-                gr.Markdown("#### 生成参数")
+                gr.Markdown("#### 服务器配置")
                 
-                step2_webui_url = gr.Textbox(
-                    label="WebUI 服务器地址",
-                    value=SERVER_URL,
-                    placeholder="http://localhost:7860"
-                )
+                with gr.Group():
+                    step2_server_urls = gr.Textbox(
+                        label="WebUI 服务器地址（每行一个）",
+                        value="\n".join(SERVER_URLS),
+                        placeholder="http://localhost:7860\nhttp://192.168.1.100:7861\nhttp://server3:7862",
+                        lines=4,
+                        info="支持多个服务器并行生成，每行输入一个地址"
+                    )
+                    
+                    test_servers_btn = gr.Button("🔍 测试连接", variant="primary")
+                    step2_max_workers = gr.Number(
+                        label="最大并行数",
+                        value=len(SERVER_URLS),
+                        info="建议不超过服务器数量"
+                    )
+                    
+                    server_status = gr.Textbox(
+                        label="服务器状态",
+                        lines=6,
+                        interactive=False
+                    )
+                
+                gr.Markdown("#### 生成参数")
                 
                 # 基础参数
                 with gr.Group():
@@ -193,7 +240,7 @@ def create_interface():
                     step2_control_image = gr.Image(label="控制图（可选）", type="pil")
 
                 
-                step2_btn = gr.Button("🎨 开始生成", variant="primary", size="lg")
+                step2_btn = gr.Button("🎨 开始并行生成", variant="primary", size="lg")
                 step2_output = gr.Textbox(label="执行结果", lines=3)
             
             # 右侧：图片展示和重绘
@@ -232,13 +279,19 @@ def create_interface():
                 regenerate_output = gr.Textbox(label="重绘结果", lines=2)
         
         # 事件绑定
+        test_servers_btn.click(
+            fn=test_servers,
+            inputs=step2_server_urls,
+            outputs=server_status
+        )
+        
         step2_btn.click(
             fn=run_step2,
             inputs=[
-                step2_webui_url, step2_width, step2_height, step2_steps, step2_sampler,
-                step2_scheduler, step2_cfg, step2_seed, step2_enable_hr, step2_hr_scale,
-                step2_hr_upscaler, step2_denoising, step2_more_details, step2_negative, 
-                step2_control_image
+                step2_server_urls, step2_max_workers, step2_width, step2_height, step2_steps, 
+                step2_sampler, step2_scheduler, step2_cfg, step2_seed, step2_enable_hr, 
+                step2_hr_scale, step2_hr_upscaler, step2_denoising, step2_more_details, 
+                step2_negative, step2_control_image
             ],
             outputs=[step2_output, image_gallery]
         )
@@ -268,5 +321,6 @@ def create_interface():
     return {
         'run_step2': run_step2,
         'update_gallery': update_image_gallery,
-        'regenerate': handle_regenerate
+        'regenerate': handle_regenerate,
+        'test_servers': test_servers
     }

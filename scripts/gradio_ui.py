@@ -68,8 +68,8 @@ def run_step4(fps, enlarge_background, enable_effect, effect_type):
     except Exception as e:
         return f"❌ Step 4 失败: {str(e)}"
 
-def run_all_steps(novel_text, api_key, webui_url, min_sentence_length, width, height, steps, fps):
-    """一键运行所有步骤（更新Step 1调用）"""
+def run_all_steps(novel_text, api_key, server_urls_text, max_workers, min_sentence_length, width, height, steps, fps):
+    """一键运行所有步骤（支持多服务器）"""
     results = []
     
     # Step 0
@@ -79,15 +79,18 @@ def run_all_steps(novel_text, api_key, webui_url, min_sentence_length, width, he
     if "失败" in result0:
         return "\n".join(results)
     
-    # Step 1 (使用新的模块)
+    # Step 1
     result1, _ = gradio_utils.step1.run_step1(min_sentence_length, "", api_key)
     results.append(f"Step 1: {result1}")
     
     if "失败" in result1:
         return "\n".join(results)
     
-    # Step 2
-    result2 = gradio_utils.step2.run_step2(webui_url, width, height, steps, "DPM++ 3M SDE", "Karras", 7, -1, True, 2, "Latent", 0.7, "", "", None)
+    # Step 2 (多服务器)
+    result2, _ = gradio_utils.step2.run_step2(
+        server_urls_text, max_workers, width, height, steps, "DPM++ 3M SDE", 
+        "Karras", 7, -1, True, 2, "Latent", 0.7, "", "", None
+    )
     results.append(f"Step 2: {result2}")
     
     if "失败" in result2:
@@ -104,7 +107,6 @@ def run_all_steps(novel_text, api_key, webui_url, min_sentence_length, width, he
     result4 = run_step4(fps, True, True, 0)
     results.append(f"Step 4: {result4}")
     
-    return "\n".join(results)
 
 
 # 创建 Gradio 界面
@@ -113,9 +115,9 @@ with gr.Blocks(title="小说转视频生成器", theme=gr.themes.Soft()) as demo
     gr.Markdown("将小说文本转换为带配音的视频，支持角色识别、图像生成、语音合成等功能")
     
     with gr.Tabs():
-        # 一键生成标签页
+        # 在一键生成界面中添加多服务器配置
         with gr.TabItem("🚀 一键生成"):
-            gr.Markdown("### 快速生成模式（使用默认参数）")
+            gr.Markdown("### 快速生成模式（支持多服务器并行）")
             
             with gr.Row():
                 with gr.Column():
@@ -129,10 +131,17 @@ with gr.Blocks(title="小说转视频生成器", theme=gr.themes.Soft()) as demo
                         placeholder="sk-...",
                         type="password"
                     )
-                    quick_webui_url = gr.Textbox(
-                        label="WebUI 服务器地址",
-                        value="http://172.18.36.54:7862",
-                        placeholder="http://localhost:7860"
+                    quick_server_urls = gr.Textbox(
+                        label="WebUI 服务器地址（每行一个）",
+                        value="http://172.18.36.54:7862\nhttp://172.18.36.54:7863\nhttp://172.18.36.54:7864\nhttp://172.18.36.54:7865\nhttp://172.18.36.54:7866",
+                        placeholder="http://server1:7860\nhttp://server2:7861",
+                        lines=3
+                    )
+                    quick_max_workers = gr.Number(
+                        label="最大并行数",
+                        value=2,
+                        minimum=1,
+                        maximum=8
                     )
                     
                 with gr.Column():
@@ -153,10 +162,11 @@ with gr.Blocks(title="小说转视频生成器", theme=gr.themes.Soft()) as demo
             
             quick_run_btn.click(
                 fn=run_all_steps,
-                inputs=[quick_novel_text, quick_api_key, quick_webui_url, quick_min_length, 
-                       quick_width, quick_height, quick_steps, quick_fps],
+                inputs=[quick_novel_text, quick_api_key, quick_server_urls, quick_max_workers,
+                    quick_min_length, quick_width, quick_height, quick_steps, quick_fps],
                 outputs=quick_output
             )
+
         
         # Step 0 标签页
         gradio_utils.step0.create_interface()
@@ -232,7 +242,7 @@ with gr.Blocks(title="小说转视频生成器", theme=gr.themes.Soft()) as demo
                 with gr.Column():
                     step4_output = gr.Textbox(label="执行结果", lines=10)
             
-            step4_btn = gr.Button("执行 Step 4", variant="primary")
+            step4_btn = gr.Button("执行 Step 4", variant="secondary")
             step4_btn.click(
                 fn=run_step4,
                 inputs=[step4_fps, step4_enlarge, step4_enable_effect, step4_effect_type],
