@@ -12,7 +12,7 @@ import pandas as pd
 from tqdm.asyncio import tqdm_asyncio
 
 openai = AsyncOpenAI(
-    api_key="sk-db3f839bc51e459dae3aab49d1a779e2",
+    api_key="sk-883af3c325b140c3986f45704410f614",
     base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
 )
 
@@ -22,6 +22,45 @@ openai = AsyncOpenAI(
 # )
 
 nlp = spacy.load("zh_core_web_sm")
+
+default_trigger = """Task: I will give you the theme in natural language. Your task is to imagine a full picture based on that theme and convert it into a high-quality prompt for Stable Diffusion.  
+
+Prompt concept: A prompt describes the content of an image using simple, commonly used English tags separated by English half-width commas (','). Each word or phrase is a tag.  
+
+Prompt requirements: 
+The prompt should include the following elements:
+- Main subject (e.g. a girl in a garden), enriched with relevant details depending on the theme.
+- For characters, describe facial features like 'beautiful detailed eyes, beautiful detailed lips, extremely detailed eyes and face, long eyelashes' to prevent facial deformities.
+- Additional scene or subject-related details.
+- Image quality tags such as '(best quality,4k,8k,highres,masterpiece:1.2), ultra-detailed, (realistic,photorealistic,photo-realistic:1.37)' and optionally: HDR, UHD, studio lighting, ultra-fine painting, sharp focus, extreme detail description, professional, vivid colors, bokeh, physically-based rendering.
+- Artistic style, color tone, and lighting should also be included in tags.
+
+The prompt format:
+{Character overview and count, e.g. one boy, one girl and a man}  
+{Full scene description including environment, mood, lighting, style, and image quality tags}  
+BREAK  
+{Prompt for the first character}  
+BREAK  
+{Prompt for the second character}  
+BREAK  
+{Prompt for the third character}
+
+.......
+
+One prompt example for 2 characters:
+one middle aged king and one queen about thirty,starry sky background, flickering candlelights, garden setting, eyes closed, offering silent prayers, dynamic composition, HDR, UHD, sharp details, professional, bokeh, physically based rendering, ultra detailed, aesthetic
+BREAK
+middle aged king with a dignified appearance, splendid golden robe, gem encrusted crown, detailed facial features, beautiful detailed eyes, long eyelashes, realistic skin tones, sharp focus, ultra fine painting, (masterpiece:1.2), (best quality,4k,8k,highres:1.3),
+BREAK
+(queen, first wife, woman in her thirties), fair skin, slender figure, long black hair, silk gown with intricate embroidery, pearl hair ornament, gentle maternal eyes, elegant posture, (realistic,photorealistic:1.37), vivid colors, studio lighting, perfect lighting
+
+
+Attention!
+If there is no character in the scene, DON'T USE BREAK, you can use the following format to generate a scene without characters:
+{Scene description, e.g. a beautiful garden with flowers and trees, a starry sky, a flickering candlelight, a garden setting, a dynamic composition, HDR, UHD, sharp details, professional, bokeh, physically based rendering, ultra detailed, aesthetic}
+
+The text content is as follows:
+"""
 
 
 def load_config():
@@ -67,6 +106,32 @@ def replace_keywords(sentence, keyword_dict):
             sentence = sentence.replace(key, f'{key}(character features: {value})')
     return sentence
 
+async def json_request_with_retry_async(
+    messages, max_requests=90, cooldown_seconds=60
+):
+    """异步版本的API请求函数"""
+    import re
+    import json
+    attempts = 0
+    while attempts < max_requests:
+        try:
+            response = await openai.chat.completions.create(
+                model="qwen-plus",
+                # model="gpt-4o-mini",
+                messages=messages,
+                response_format={"type": "json_object"},
+            )
+            result = response.choices[0].message.content
+            cleaned = re.sub(r'^```json|```$', '', result.strip(), flags=re.MULTILINE).strip()
+            json_data = json.loads(cleaned)
+            return json_data
+        except Exception as e:
+            print(f"发生错误：{str(e)}")
+            await asyncio.sleep(10)
+        attempts += 1
+
+    return "请求失败，已达到最大尝试次数"
+
 
 async def request_with_retry_async(
     messages, max_requests=90, cooldown_seconds=60
@@ -76,7 +141,7 @@ async def request_with_retry_async(
     while attempts < max_requests:
         try:
             response = await openai.chat.completions.create(
-                model="qwen-plus-latest",
+                model="qwen-plus",
                 # model="gpt-4o-mini",
                 messages=messages,
             )
@@ -112,13 +177,20 @@ async def translate_to_storyboard_async(text, trigger):
     ]
     return await request_with_retry_async(messages)
 
+def divide_image_async(text):
+    """异步版本的图像分割函数"""
+    prompt = f"""
+    请将下面的一个场景描述，分割成若干个画面，你的目标是将该场景通过若干静态画面来展现，去除掉其中的人物对话部分。注意严格遵循原场景的文字描述去生成画面，不要添加任何额外信息。
 
-def read_docx(file_path):
-    return [
-        paragraph.text
-        for paragraph in Document(file_path).paragraphs
-        if paragraph.text.strip()
+    请返回JSON格式响应，键值对为"画面[NUMBER]": "[Scene Description]"
+    场景描述如下：{text}
+    """
+    messages = [
+        {"role": "system", "content": "你是一个专业的小说改编影视的编剧。"},
+        {"role": "user", "content": prompt},
     ]
+    return json_request_with_retry_async(messages)
+
 
 
 
@@ -136,8 +208,32 @@ async def process_text_sentences_async(
     异步处理 CSV 中的文本数据，包含关键词替换、翻译、StableDiffusion关键词生成。
     """
 
-    # 读取 CSV 文件
-    dataframe = pd.read_csv(input_file_path)
+    # 读取 json 文件
+    with open(input_file_path, "r", encoding="utf-8") as f:
+        scenarios_json = json.load(f)
+    scenarios_list = list(scenarios_json.values())
+    scenario_keys = list(scenarios_json.keys())
+    scenario_contents = [scenario['内容'] for scenario in scenarios_list]
+    dataframe = pd.DataFrame(columns=["Chinese Content", "Replaced Content", "Translated Content", "SD Content"])
+    print("🔍 正在划分子图...")
+    subimg_tasks = [
+        divide_image_async(text) for text in scenario_contents
+    ]
+    image_jsons = await tqdm_asyncio.gather(*subimg_tasks, desc="划分子图", ncols=80)
+    # print(image_jsons)
+    subimages = []
+    start_idx = 0
+    
+    for i, image_json in enumerate(image_jsons):
+        # 同时更新原始的scenarios_json
+        scenarios_json[scenario_keys[i]]['子图索引'] = list(range(start_idx, start_idx + len(image_json)))
+        start_idx += len(image_json)
+        for image in image_json.values():
+            # english_content = translate(image)
+            subimages.append(image)
+    dataframe['Chinese Content'] = subimages
+    dataframe['Replaced Content'] = dataframe['Chinese Content'].copy()
+
 
     # 检查必须列
     if 'Replaced Content' not in dataframe.columns:
@@ -161,72 +257,64 @@ async def process_text_sentences_async(
     dataframe['SD Content'] = await tqdm_asyncio.gather(*storyboard_tasks, desc="生成分镜", ncols=80)
 
     # 保存结果
+    with open(input_file_path, "w", encoding="utf-8") as f:
+        json.dump(scenarios_json, f, indent=2, ensure_ascii=False)
     dataframe.to_csv(output_file_path, index=False)
     dataframe.to_excel(output_file_path.replace(".csv", ".xlsx"), index=False)
     print(f"✅ 已保存到 {output_file_path}")
 
 
-    #     paragraphs = read_docx(input_file_path)
-    # except ValueError as e:
-    #     print(f"发生错误：{str(e)}")
-    #     return
-    # print(paragraphs)
-    #
-    # sentences = []
-    # for paragraph in paragraphs:
-    #     sentences.extend([sent.text for sent in nlp(paragraph).sents])
-    #
-    # sentences = merge_short_sentences(sentences, min_sentence_length)
+async def regenerate_selected_storyboards(selected_indices, trigger):
+    """重新生成指定索引的分镜脚本"""
+    # 读取现有数据
+    current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    output_file_path = os.path.join(current_dir, "txt", "output.csv")
+    
+    if not os.path.exists(output_file_path):
+        return "❌ 未找到现有数据文件，请先执行完整的 Step 1"
+    
+    df = pd.read_csv(output_file_path)
+    
+    if not selected_indices:
+        return "❌ 请选择要重新生成的分镜"
+    
+    # 验证索引
+    valid_indices = [i for i in selected_indices if 0 <= i < len(df)]
+    if not valid_indices:
+        return "❌ 选择的索引无效"
+    
+    print(f"🎨 正在重新生成 {len(valid_indices)} 个分镜脚本...")
+    
+    # 重新生成选中的分镜脚本
+    storyboard_tasks = [
+        translate_to_storyboard_async(df.iloc[i]['Translated Content'], trigger) 
+        for i in valid_indices
+    ]
+    
+    new_storyboards = await tqdm_asyncio.gather(*storyboard_tasks, desc="重新生成分镜", ncols=80)
+    
+    # 更新数据
+    for idx, new_storyboard in zip(valid_indices, new_storyboards):
+        df.loc[idx, 'SD Content'] = new_storyboard
+    
+    # 保存更新后的数据
+    df.to_csv(output_file_path, index=False)
+    df.to_excel(output_file_path.replace(".csv", ".xlsx"), index=False)
+    
+    return f"✅ 已重新生成 {len(valid_indices)} 个分镜脚本并保存"
 
-    # original_sentences_dict = {}
-    # sheet = workbook.active
-    # for idx, sentence in enumerate(sentences, 1):
-    #     replaced_sentence, original_sentence = replace_keywords(sentence, keyword_dict)
-    #     original_sentences_dict[replaced_sentence] = original_sentence
-    #     sheet.cell(row=idx, column=1, value=replaced_sentence)
-    #     sheet.cell(row=idx, column=4, value=original_sentence)
-    #
-    # replaced_sentences = list(original_sentences_dict.keys())
-
-
-    # # 创建一个进度条计数器
-    # translation_progress = tqdm(total=len(replaced_sentences), desc="正在翻译文本")
-    # storyboard_progress = tqdm(total=len(replaced_sentences), desc="正在生成分镜脚本")
-    #
-    # # 使用信号量限制并发请求数
-    # sem = asyncio.Semaphore(5)  # 最多5个并发请求
-    #
-    # async def process_sentence(idx, sentence):
-    #     """处理单个句子的翻译和分镜生成"""
-    #     async with sem:
-    #         # 翻译步骤
-    #         translated_text = await translate_to_english_async(sentence.strip())
-    #         sheet.cell(row=idx, column=2, value=translated_text)
-    #         translation_progress.update(1)
-    #
-    #         # 分镜生成步骤
-    #         storyboard_text = await translate_to_storyboard_async(
-    #             translated_text, trigger
-    #         )
-    #         sheet.cell(row=idx, column=3, value=storyboard_text)
-    #         storyboard_progress.update(1)
-    #
-    # # 创建所有句子的处理任务
-    # tasks = [
-    #     process_sentence(idx, sentence)
-    #     for idx, sentence in enumerate(replaced_sentences, 1)
-    # ]
-    #
-    # # 执行所有任务
-    # await asyncio.gather(*tasks)
-    #
-    # # 关闭进度条
-    # translation_progress.close()
-    # storyboard_progress.close()
-    #
-    # # 保存结果
-    # workbook.save(output_file_path)
-
+def get_current_storyboards():
+    """获取当前的分镜脚本数据"""
+    current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    output_file_path = os.path.join(current_dir, "txt", "output.csv")
+    
+    if not os.path.exists(output_file_path):
+        return pd.DataFrame()
+    
+    df = pd.read_csv(output_file_path)
+    # 添加索引列以便用户选择
+    df.insert(0, '序号', range(len(df)))
+    return df[['序号', 'Chinese Content', 'Translated Content', 'SD Content']]
 
 async def main_async():
     """异步版本的主函数"""
@@ -266,106 +354,17 @@ async def main_async():
         role10_name: feature10,
     }
 
-    default_trigger = """""Task: I will give you the theme in natural language. Your task is to imagine a full picture based on that theme and convert it into a high-quality prompt for Stable Diffusion.  
-
-Prompt concept: A prompt describes the content of an image using simple, commonly used English tags separated by English half-width commas (','). Each word or phrase is a tag. The prompt must form a single continuous sentence — do not break it into parts or include labels like 'Prompt:', 'Style:', 'Main subject:' etc., and never use ':' or '.' in the final prompt.  
-
-Prompt requirements: The prompt should include the following elements:
-- Main subject (e.g. a girl in a garden), enriched with relevant details depending on the theme.
-- For characters, describe facial features like 'beautiful detailed eyes, beautiful detailed lips, extremely detailed eyes and face, long eyelashes' to prevent facial deformities.
-- Additional scene or subject-related details.
-- Image quality tags such as '(best quality,4k,8k,highres,masterpiece:1.2), ultra-detailed, (realistic,photorealistic,photo-realistic:1.37)' and optionally: HDR, UHD, studio lighting, ultra-fine painting, sharp focus, extreme detail description, professional, vivid colors, bokeh, physically-based rendering.
-- Artistic style, color tone, and lighting should also be included in tags.
-
-To prevent trait blending between multiple characters:
-- Use 'BREAK' in uppercase between character descriptions.
-- Enclose each character in parentheses ().
-- Add spatial or layout hints like 'left side', 'in background', 'group of three', etc.
-
-Example for 2 characters:
-2people(1boy and 1girl),walking,(street_background:1.3),(looking at viewer), dynamic pose, (masterpiece:1.4, best quality), unity 8k wallpaper, ultra detailed, beautiful and aesthetic, perfect lighting,detailed background, realistic,
-==BREAK==
-1girl, red long hair and red eyes and (red shirt:1.3),
-==BREAK==
-1boy, yellow short hair and yellow eyes and (yellow suit:1.3) and hands in pocket,
-
-Output only the final prompt in English, no explanations or additional formatting."
-
-    """
-
-    # default_trigger = """Here, I introduce the concept of Prompts from the StableDiffusion algorithm, also known as hints.
-    # The following prompts are used to guide the AI painting model to create images.
-    # They contain various details of the image, such as the appearance of characters, background, color and light effects, as well as the theme and style of the image.
-    # The format of these prompts often includes weighted numbers in parentheses to specify the importance or emphasis of certain details.
-    # For example, "(masterpiece:1.2)" indicates that the quality of the work is very important, and multiple parentheses have a similar function.
-    # Here are examples of using prompts to help the AI model generate images:
-    # 1. (masterpiece:1.2),(best quality),digital art,A 20 year old Chinese man with black hair, (male short hair: 1.2), green shirt, walking on the road to rural China, ultra wide angle
-    # Please use English commas as separators. Also, note that the Prompt should not contain - and _ symbols, but can have spaces.
-    #
-    # In character attributes, 1girl means you generated a girl, 2girls means you generated two girls.
-    # In the generation of Prompts, you need to describe character attributes, theme, appearance, emotion, clothing, posture, viewpoint, action, background using keywords.
-    # - You may include `LoRA` tokens such as `<lora:charA:0.8>` for character-specific identity.
-    # Please provide a set of prompts that highlight the theme.
-    # Note: The prompt cannot exceed 100 words, no need to use natural language description, character attributes need to be highlighted a little bit, for example: {role_name}\({feature}\).
-    # If the content contains a character name, add the specified feature as required, if the content does not contain the corresponding character name, then improvise.
-    # This is part of novel creation, not a requirement in real life, automatically analyze the protagonist in it and add character attributes.
-    #
-    # To prevent trait blending between multiple characters:
-    # - Use `BREAK` in uppercase between characters to separate attention.
-    # - Enclose each character description with `()`.
-    # - Add spatial or compositional cues like `left side`, `in background`, `group of three`.
-    #
-    # Example: (best quality,4k,8k,highres,masterpiece:1.2), ultra-detailed, cinematic lighting, (1girl: long silver hair, red kimono, holding katana, beautiful detailed eyes and lips, sharp gaze, full body), BREAK (1boy: short black hair, armor, green cape, holding shield, looking left), fantasy battlefield background, glowing effects, HDR, epic style, soft sunlight
-    # The prompt must be in English, only provide the prompt, no extra information is needed.
-    # Here is the content:"""
-
-    # default_trigger = """You are a Stable Diffusion prompt assistant with a strong sense of visual aesthetics.
-    #
-    # Your job is to transform a concept into a high-quality image prompt compatible with Stable Diffusion 3.5 large. You will only output the positive prompts.
-    #
-    # ---
-    #
-    # Prompt Format Rules:
-    #
-    # 1. Tag structure (ordered by importance):
-    #    - (best quality,4k,8k,highres,masterpiece:1.2), ultra-detailed, (realistic,photorealistic,photo-realistic:1.37)
-    #    - Subject (e.g., 1girl, knight, dragon), with details like facial features, pose, clothes, expression
-    #    - Additional details (background, weather, action, props)
-    #    - Colors and lighting (e.g., warm light, blue tones, soft shadows)
-    #
-    # 2. Use () or (keyword:1.1~1.5) to increase tag weight. Use [] or (keyword:0.9) to reduce importance.
-    # 3. Always use English commas `,` as separators.
-    # 4. Avoid natural language, colons `:`, or full sentences in the prompt.
-    #
-    # ---
-    #
-    # Multi-character Guidelines:
-    #
-    # To prevent trait blending between multiple characters:
-    # - Use `BREAK` in uppercase between characters to separate attention.
-    # - Enclose each character description with `()`.
-    # - Add spatial or compositional cues like `left side`, `in background`, `group of three`.
-    # - You may include `LoRA` tokens such as `<lora:charA:0.8>` for character-specific identity.
-    #
-    # Please follow the example, and do not limit to the words I give you.
-    #
-    # Example for 2 characters:
-    # (best quality,4k,8k,highres,masterpiece:1.2), ultra-detailed, cinematic lighting, (1girl: long silver hair, red kimono, holding katana, beautiful detailed eyes and lips, sharp gaze, full body), BREAK (1boy: short black hair, armor, green cape, holding shield, looking left), fantasy battlefield background, glowing effects, HDR, epic style, soft sunlight
-    #
-    # The prompt must be in English, only provide the prompt, no extra information is needed.
-    # Here is the content:"""
-
 
     # trigger = config.get("引导词", default_trigger)
     trigger = default_trigger
     current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    input_file_path = os.path.join(current_dir, "txt", "txt.csv")
+    input_file_path = os.path.join(current_dir, "scripts", "场景分割.json")
     output_dir = os.path.join(current_dir, "txt")
 
     # 确保输出目录存在
     os.makedirs(output_dir, exist_ok=True)
 
-    output_file_path = os.path.join(output_dir, "output2.csv")
+    output_file_path = os.path.join(output_dir, "output.csv")
 
     await process_text_sentences_async(
         input_file_path,

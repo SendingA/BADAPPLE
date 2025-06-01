@@ -4,6 +4,9 @@
 video/*
 voice/*
 image/*
+
+**/__pycache__/
 temp/*
 image_v2/*
 
+.idea
