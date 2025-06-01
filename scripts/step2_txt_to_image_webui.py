@@ -9,12 +9,6 @@
 2. **保留** 了原有的中文注释、终端输出与交互逻辑；
 3. 仍然通过读取 ``txt/txt2.xlsx`` 第 **C** 列的非空单元格来获取提示词，
    生成的 PNG 将保存到 ``image/``；参数日志以 JSONL 形式写入 ``temp/params.jsonl``。
-
-运行方式：
->>> python generate_images_webui.py
-
-执行后脚本会先生成所有图片，然后在终端提示：
->>> 请输入需要重绘的图片编号（空格分隔，输入 N 退出）：
 """
 
 from __future__ import annotations
@@ -45,7 +39,7 @@ SERVER_URL: str = os.getenv("WEBUI_SERVER_URL", "http://172.18.36.54:7862").rstr
 TXT2IMG_URL: str = f"{SERVER_URL}/sdapi/v1/txt2img"
 
 CURRENT_DIR: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PROMPT_XLSX: str = os.path.join(CURRENT_DIR, "txt", "output.xlsx")
+PROMPT_XLSX: str = os.path.join(CURRENT_DIR, "txt", "output2.xlsx")
 IMAGE_DIR: str = os.path.join(CURRENT_DIR, "image")
 PARAMS_LOG: str = os.path.join(CURRENT_DIR, "temp", "params.jsonl")
 print(CURRENT_DIR)
@@ -97,7 +91,7 @@ def run_webui_program(
 ) -> None:
     """批量生成（或重绘）PNG 图片。"""
 
-    prompts = get_prompts(PROMPT_XLSX)
+    prompts = get_prompts(PROMPT_XLSX)[1:]
 
     # 需要处理的索引集合
     indices = (
@@ -108,7 +102,7 @@ def run_webui_program(
 
     # 默认生成参数，可根据需要修改
     params: dict[str, Any] = {
-        "width": 512,
+        "width": 1024,
         "height": 512,
         "steps": 50,
         "sampler_name": "DPM++ 3M SDE",
@@ -116,7 +110,7 @@ def run_webui_program(
         "batch_size": 1,
         "cfg_scale": 7,
         "seed": -1,  # -1 代表 WebUI 随机种子
-        "enable_hr": True,
+        "enable_hr": False,
         "hr_scale": 2,
         "hr_upscaler": "Latent",
         "denoising_strength": 0.7,
@@ -130,15 +124,16 @@ def run_webui_program(
     if os.path.exists(cfg_path):
         with open(cfg_path, "r", encoding="utf-8") as f:
             user_cfg = json.load(f)
-    more_details: str = user_cfg.get("more_details", "")
-    negative_prompt: str = user_cfg.get("negative_prompt", "")
+
+    user_cfg_data = user_cfg.get("data", {})
+    negative_prompt: str = user_cfg_data.get("negative_prompt", "")
 
     # 控制图（如果提供）
     encoded_control_img = _encode_image_to_base64(control_image) if control_image else None
 
     for idx in tqdm(indices, desc="生成中", unit="张"):
         prompt_core = prompts[idx]
-        positive_prompt = f"{prompt_core},{more_details}" if more_details else prompt_core
+        positive_prompt = f"{prompt_core}"
 
         # 构建 payload
         payload: dict[str, Any] = {
@@ -160,47 +155,37 @@ def run_webui_program(
             )},
         }
 
-        if encoded_control_img:
-            payload.setdefault("alwayson_scripts", {}).update(
-                {
-                    "controlnet": {
-                        "args": [
-                            {
-                                "enabled": True,
-                                "image": encoded_control_img,
-                                "module": "ip-adapter-auto",
-                                "model": "ip-adapter_sd15_plus [32cd8f7f]",
-                            }
-                        ]
-                    },
-                    "Regional Prompter": {
-                        "args": [
-                            True,                  # 1  Active
-                            False,                 # 2  debug
-                            "Matrix",              # 3  Mode
-                            "Vertical",            # 4  Mode (Matrix)
-                            "Mask",                # 5  Mode (Mask)
-                            "Prompt",              # 6  Mode (Prompt)
-                            "1,1,1",               # 7  Ratios
-                            "",                    # 8  Base Ratios
-                            False,                 # 9  Use Base
-                            False,                 # 10 Use Common
-                            False,                 # 11 Use Neg-Common
-                            "Attention",           # 12 Calcmode
-                            False,                 # 13 Not Change AND
-                            "0",                   # 14 LoRA Textencoder
-                            "0",                   # 15 LoRA U-Net
-                            "0",                   # 16 Threshold
-                            "",                    # 17 Mask (图片路径)
-                            "0",                   # 18 LoRA stop step
-                            "0",                   # 19 LoRA Hires stop step
-                            False                  # 20 flip
-                        ]
-                    }
+        payload.setdefault("alwayson_scripts", {}).update(
+            {
+                "Regional Prompter": {
+                    "args": [
+                        True,                  # 1  Active
+                        False,                 # 2  debug
+                        "Matrix",              # 3  Mode
+                        "Vertical",            # 4  Mode (Matrix)
+                        "Mask",                # 5  Mode (Mask)
+                        "Prompt",              # 6  Mode (Prompt)
+                        "1,1",               # 7  Ratios
+                        "",                    # 8  Base Ratios
+                        False,                 # 9  Use Base
+                        True,                 # 10 Use Common
+                        False,                 # 11 Use Neg-Common
+                        "Attention",           # 12 Calcmode
+                        False,                 # 13 Not Change AND
+                        "0",                   # 14 LoRA Textencoder
+                        "0",                   # 15 LoRA U-Net
+                        "0",                   # 16 Threshold
+                        "",                    # 17 Mask (图片路径)
+                        "0",                   # 18 LoRA stop step
+                        "0",                   # 19 LoRA Hires stop step
+                        False                  # 20 flip
+                    ]
                 }
-            )
+            }
+        )
 
         try:
+            print(payload)
             img_bytes = txt2img(payload)
         except Exception as exc:
             logging.error("生成失败（#%d）：%s", idx + 1, exc)

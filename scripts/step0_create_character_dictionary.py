@@ -202,7 +202,7 @@ def save_scenarios(scenarios_json):
 
 if __name__ == '__main__':
     print("BADAPPLE")
-    with open("../input.txt", "r", encoding="utf-8") as file:
+    with open("../input2.txt", "r", encoding="utf-8") as file:
         text = file.read()
         scenarios = divide_scenarios(text)
         # print(scenarios)

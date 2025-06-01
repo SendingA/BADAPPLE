@@ -10,16 +10,16 @@ from docx import Document
 from tqdm import tqdm
 import pandas as pd
 from tqdm.asyncio import tqdm_asyncio
+#
+# openai = AsyncOpenAI(
+#     api_key="sk-db3f839bc51e459dae3aab49d1a779e2",
+#     base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+# )
 
 openai = AsyncOpenAI(
-    api_key="sk-db3f839bc51e459dae3aab49d1a779e2",
-    base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+    api_key="sk-cLHG0jRuBeFDE49617b9T3BLBkFJe5b79d2bDefD4Db7b9fa",
+    base_url="https://c-z0-api-01.hash070.com/v1",
 )
-
-# openai = AsyncOpenAI(
-#     api_key="sk-cLHG0jRuBeFDE49617b9T3BLBkFJe5b79d2bDefD4Db7b9fa",
-#     base_url="https://c-z0-api-01.hash070.com/v1",
-# )
 
 nlp = spacy.load("zh_core_web_sm")
 
@@ -76,8 +76,8 @@ async def request_with_retry_async(
     while attempts < max_requests:
         try:
             response = await openai.chat.completions.create(
-                model="qwen-plus-latest",
-                # model="gpt-4o-mini",
+                # model="qwen-plus-latest",
+                model="gpt-4.1-mini",
                 messages=messages,
             )
             return response.choices[0].message.content.strip()
@@ -144,7 +144,7 @@ async def process_text_sentences_async(
         raise ValueError("CSV中缺少'Replaced Content'这一列。")
 
     # 替换关键词（支持传入自定义的 replace_keywords 函数）
-    dataframe['Replaced Content'] = dataframe['Replaced Content'].apply(replace_keywords, args=(keyword_dict,))
+    dataframe['Replaced Content'] = dataframe['Chinese Content'].apply(replace_keywords, args=(keyword_dict,))
 
     # 异步翻译
     print("🔤 开始翻译内容...")
@@ -266,30 +266,38 @@ async def main_async():
         role10_name: feature10,
     }
 
-    default_trigger = """""Task: I will give you the theme in natural language. Your task is to imagine a full picture based on that theme and convert it into a high-quality prompt for Stable Diffusion.  
+    default_trigger = """ Task: I will give you the theme in natural language. Your task is to imagine a full picture based on that theme and convert it into a high-quality prompt for Stable Diffusion.  
 
-Prompt concept: A prompt describes the content of an image using simple, commonly used English tags separated by English half-width commas (','). Each word or phrase is a tag. The prompt must form a single continuous sentence — do not break it into parts or include labels like 'Prompt:', 'Style:', 'Main subject:' etc., and never use ':' or '.' in the final prompt.  
+Prompt concept: A prompt describes the content of an image using simple, commonly used English tags separated by English half-width commas (','). Each word or phrase is a tag.  
 
-Prompt requirements: The prompt should include the following elements:
+Prompt requirements: 
+The prompt should include the following elements:
 - Main subject (e.g. a girl in a garden), enriched with relevant details depending on the theme.
 - For characters, describe facial features like 'beautiful detailed eyes, beautiful detailed lips, extremely detailed eyes and face, long eyelashes' to prevent facial deformities.
 - Additional scene or subject-related details.
 - Image quality tags such as '(best quality,4k,8k,highres,masterpiece:1.2), ultra-detailed, (realistic,photorealistic,photo-realistic:1.37)' and optionally: HDR, UHD, studio lighting, ultra-fine painting, sharp focus, extreme detail description, professional, vivid colors, bokeh, physically-based rendering.
 - Artistic style, color tone, and lighting should also be included in tags.
 
-To prevent trait blending between multiple characters:
-- Use 'BREAK' in uppercase between character descriptions.
-- Enclose each character in parentheses ().
-- Add spatial or layout hints like 'left side', 'in background', 'group of three', etc.
+The prompt format:
+{Character overview and count, e.g. one boy and one girl, two warriors, a princess and a knight}  
+{Full scene description including environment, mood, lighting, style, and quality tags}  
+BREAK  
+{Prompt for the first region as defined in Divisions}  
+BREAK  
+{Prompt for the second region as defined in Positions}  
+BREAK  
+{Prompt for the third region as defined in Positions}
 
-Example for 2 characters:
-2people(1boy and 1girl),walking,(street_background:1.3),(looking at viewer), dynamic pose, (masterpiece:1.4, best quality), unity 8k wallpaper, ultra detailed, beautiful and aesthetic, perfect lighting,detailed background, realistic,
-==BREAK==
-1girl, red long hair and red eyes and (red shirt:1.3),
-==BREAK==
-1boy, yellow short hair and yellow eyes and (yellow suit:1.3) and hands in pocket,
+.......
 
-Output only the final prompt in English, no explanations or additional formatting."
+One prompt example for 2 characters:
+one middle aged king and one queen about thirty,starry sky background, flickering candlelights, garden setting, eyes closed, offering silent prayers, dynamic composition, HDR, UHD, sharp details, professional, bokeh, physically based rendering, ultra detailed, aesthetic
+BREAK
+middle aged king with a dignified appearance, splendid golden robe, gem encrusted crown, detailed facial features, beautiful detailed eyes, long eyelashes, realistic skin tones, sharp focus, ultra fine painting, (masterpiece:1.2), (best quality,4k,8k,highres:1.3),
+BREAK
+(queen, first wife, woman in her thirties), fair skin, slender figure, long black hair, silk gown with intricate embroidery, pearl hair ornament, gentle maternal eyes, elegant posture, (realistic,photorealistic:1.37), vivid colors, studio lighting, perfect lighting
+
+The text content is as follows:
 
     """
 

@@ -5,10 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f03d818a-e448-4dd8-bdd6-87cbd7444de2" name="Changes" comment="replace characters">
-      <change afterPath="$PROJECT_DIR$/txt/output.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/txt/output.xlsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Merge_at_2025_4_11_23_51_[Changes]1/shelved.patch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Merge_at_2025_4_11_23_51__Changes_1.xml" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/environment.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/image/output_1.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_1.png" afterDir="false" />
@@ -39,59 +36,33 @@
       <change beforePath="$PROJECT_DIR$/image/output_32.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_32.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/image/output_33.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_33.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/image/output_34.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_34.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_35.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_36.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_37.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_38.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_39.png" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/image/output_4.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_40.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_41.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_42.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_43.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_44.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_45.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_46.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_47.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_48.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_49.png" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/image/output_5.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_50.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_51.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_52.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_53.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_54.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_55.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_56.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_57.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_58.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_59.png" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/image/output_6.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_6.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_60.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_61.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_62.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_63.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_64.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_65.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_66.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_67.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_68.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_69.png" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/image/output_7.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_7.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_70.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_71.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_72.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_73.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_74.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_75.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_76.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_77.png" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/image/output_8.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_8.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/image/output_9.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_9.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/step1.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step1.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/step0_create_character_dictionary.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step0_create_character_dictionary.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/step1_extract_keywords.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step1_extract_keywords.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/step2_txt_to_image_high.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step2_txt_to_image_high.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/temp/params.json" beforeDir="false" afterPath="$PROJECT_DIR$/temp/params.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/step2_txt_to_image_webui.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step2_txt_to_image_webui.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/场景分割.json" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/场景分割.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/角色信息.json" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/角色信息.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/txt/output.csv" beforeDir="false" afterPath="$PROJECT_DIR$/txt/output.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/txt/output.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/txt/output.xlsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/txt/output2.csv" beforeDir="false" afterPath="$PROJECT_DIR$/txt/output2.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/txt/output2.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/txt/output2.xlsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/txt/txt.csv" beforeDir="false" afterPath="$PROJECT_DIR$/txt/txt.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/voice/output_0.wav" beforeDir="false" afterPath="$PROJECT_DIR$/voice/output_0.wav" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/voice/output_1.wav" beforeDir="false" afterPath="$PROJECT_DIR$/voice/output_1.wav" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/voice/output_10.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/voice/output_2.wav" beforeDir="false" afterPath="$PROJECT_DIR$/voice/output_2.wav" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/voice/output_3.wav" beforeDir="false" afterPath="$PROJECT_DIR$/voice/output_3.wav" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/voice/output_4.wav" beforeDir="false" afterPath="$PROJECT_DIR$/voice/output_4.wav" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/voice/output_5.wav" beforeDir="false" afterPath="$PROJECT_DIR$/voice/output_5.wav" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/voice/output_6.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/voice/output_7.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/voice/output_8.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/voice/output_9.wav" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -131,16 +102,18 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+    &quot;Python tests.Doctests in step2_txt_to_image_webui.executor&quot;: &quot;Run&quot;,
     &quot;Python.download.executor&quot;: &quot;Run&quot;,
     &quot;Python.step0_create_character_dictionary.executor&quot;: &quot;Run&quot;,
     &quot;Python.step1_extract_keywords.executor&quot;: &quot;Run&quot;,
     &quot;Python.step2_txt_to_image_high.executor&quot;: &quot;Run&quot;,
     &quot;Python.step2_txt_to_image_high_bak.executor&quot;: &quot;Run&quot;,
+    &quot;Python.step2_txt_to_image_webui.executor&quot;: &quot;Run&quot;,
     &quot;Python.step3_txt_to_voice_kokoro.executor&quot;: &quot;Run&quot;,
     &quot;Python.step4_output_video.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Sending/Downloads&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;fuck&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/MIP/Project/Magic-Touch/Magic-Touch/voice&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -152,8 +125,10 @@
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="D:\MIP\Project\Magic-Touch\Magic-Touch\txt" />
+      <recent name="D:\MIP\Project\Magic-Touch\Magic-Touch\voice" />
+      <recent name="D:\MIP\Project\Magic-Touch\Magic-Touch" />
       <recent name="D:\MIP\Project\Magic-Touch\Magic-Touch\scripts" />
+      <recent name="D:\MIP\Project\Magic-Touch\Magic-Touch\txt" />
     </key>
   </component>
   <component name="SharedIndexes">
@@ -182,7 +157,15 @@
       <workItem from="1744979998099" duration="15484000" />
       <workItem from="1745227019739" duration="9000" />
       <workItem from="1745249348568" duration="328000" />
-      <workItem from="1745376873839" duration="3184000" />
+      <workItem from="1745376873839" duration="8165000" />
+      <workItem from="1745937866340" duration="2000" />
+      <workItem from="1745993050987" duration="1993000" />
+      <workItem from="1746290448080" duration="1512000" />
+      <workItem from="1746600195345" duration="1328000" />
+      <workItem from="1747638108108" duration="89000" />
+      <workItem from="1747638376713" duration="75000" />
+      <workItem from="1748005182156" duration="11960000" />
+      <workItem from="1748093026793" duration="98000" />
     </task>
     <task id="LOCAL-00001" summary="replace characters">
       <option name="closed" value="true" />
@@ -226,12 +209,18 @@
     <option name="LAST_COMMIT_MESSAGE" value="replace characters" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/step0_create_character_dictionary_py$step2_txt_to_image_webui.coverage" NAME="step2_txt_to_image_webui Coverage Results" MODIFIED="1748017271753" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
+    <SUITE FILE_PATH="coverage/step0_create_character_dictionary_py$step1_extract_keywords.coverage" NAME="step1_extract_keywords Coverage Results" MODIFIED="1748017015410" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
+    <SUITE FILE_PATH="coverage/step0_create_character_dictionary_py$Doctests_in_step2_txt_to_image_webui.coverage" NAME="Doctests in step2_txt_to_image_webui Coverage Results" MODIFIED="1748014162165" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
+    <SUITE FILE_PATH="coverage/Magic_Touch$step3_txt_to_voice_kokoro.coverage" NAME="step3_txt_to_voice_kokoro Coverage Results" MODIFIED="1745388343132" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
+    <SUITE FILE_PATH="coverage/Magic_Touch$step4_output_video.coverage" NAME="step4_output_video Coverage Results" MODIFIED="1745389532358" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
+    <SUITE FILE_PATH="coverage/step0_create_character_dictionary_py$step4_output_video.coverage" NAME="step4_output_video Coverage Results" MODIFIED="1748018737984" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/Magic_Touch$step2_txt_to_image_high_bak.coverage" NAME="step2_txt_to_image_high_bak Coverage Results" MODIFIED="1743843223577" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/Magic_Touch$step1_extract_keywords.coverage" NAME="step1_extract_keywords Coverage Results" MODIFIED="1744993324542" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
+    <SUITE FILE_PATH="coverage/step0_create_character_dictionary_py$step0_create_character_dictionary.coverage" NAME="step0_create_character_dictionary Coverage Results" MODIFIED="1748016512240" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
+    <SUITE FILE_PATH="coverage/step0_create_character_dictionary_py$step3_txt_to_voice_kokoro.coverage" NAME="step3_txt_to_voice_kokoro Coverage Results" MODIFIED="1748017389117" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/Magic_Touch$download.coverage" NAME="download Coverage Results" MODIFIED="1743861616635" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Magic_Touch$step3_txt_to_voice_kokoro.coverage" NAME="step3_txt_to_voice_kokoro Coverage Results" MODIFIED="1743862270089" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/Magic_Touch$step2_txt_to_image_high.coverage" NAME="step2_txt_to_image_high Coverage Results" MODIFIED="1744991748232" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
     <SUITE FILE_PATH="coverage/Magic_Touch$step0_create_character_dictionary.coverage" NAME="step0_create_character_dictionary Coverage Results" MODIFIED="1744387493790" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
-    <SUITE FILE_PATH="coverage/Magic_Touch$step4_output_video.coverage" NAME="step4_output_video Coverage Results" MODIFIED="1744104701381" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/scripts" />
   </component>
 </project>
