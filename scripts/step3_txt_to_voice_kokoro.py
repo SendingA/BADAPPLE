@@ -58,19 +58,23 @@ class SpeechProvider:
 
         return 'wav', wavs
 
-def  convert_text_to_audio(tasks, language, output_path,gender):
+def convert_text_to_audio(tasks, language, output_path, gender):
     if not tasks:
-        return False
+        return False, []
 
-    provider = SpeechProvider(gender,language)
+    provider = SpeechProvider(gender, language)
     wav_format, wavs = provider.get_tts_audio(tasks)
     if wav_format != 'wav':
         raise ValueError("Unsupported audio format")
+    
+    audio_files = []
     if wavs is not None:
         for index, wav in enumerate(wavs):
             wav_file_path = os.path.join(output_path, f"output_{index}.wav")
             sf.write(f"{wav_file_path}", wav, provider.SAMPLE_RATE)
-    return False
+            audio_files.append(wav_file_path)
+    
+    return True, audio_files
 
 def process_text_files(input_file, output_dir, language, gender):
     print("BADAPPLE")
@@ -80,13 +84,13 @@ def process_text_files(input_file, output_dir, language, gender):
     tasks = []
     for scenario in scenarios:
         tasks.append((scenario,))
-    convert_text_to_audio(tasks, language, output_dir, gender)
-
+    success, audio_files = convert_text_to_audio(tasks, language, output_dir, gender)
+    return success, audio_files
 
 def main(input_file, output_dir, language, gender):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-    process_text_files(input_file, output_dir, language, gender)
+    return process_text_files(input_file, output_dir, language, gender)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Text to Speech Converter')
