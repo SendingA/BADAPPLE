@@ -3,8 +3,10 @@
 .idea
 
 *.mp4
+.cache
 
 # 忽略特定文件夹下的所有文件
 video/*
 voice/*
 image/*
+voice/Kokoro-82M-v1.1-zh/*

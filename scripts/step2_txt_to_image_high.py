@@ -1,342 +1,284 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+使用 **Automatic1111 WebUI** 的 ``/sdapi/v1/txt2img`` 接口根据 Excel
+中的提示词自动批量生成图片，并支持按编号重绘。
 
-import os
+这是原 ComfyUI 脚本的 *drop‑in* 替换版：
+1. **移除** 了所有 ComfyUI 专用依赖与工作流构建代码；
+2. **保留** 了原有的中文注释、终端输出与交互逻辑；
+3. 仍然通过读取 ``txt/txt2.xlsx`` 第 **C** 列的非空单元格来获取提示词，
+   生成的 PNG 将保存到 ``image/``；参数日志以 JSONL 形式写入 ``temp/params.jsonl``。
+
+运行方式：
+>>> python generate_images_webui.py
+
+执行后脚本会先生成所有图片，然后在终端提示：
+>>> 请输入需要重绘的图片编号（空格分隔，输入 N 退出）：
+"""
+
+from __future__ import annotations
+
+import base64
 import json
-import uuid
-import io
-import random
-import urllib.request
-import urllib.parse
-from distutils.command.config import config
-
-import websocket  # pip install websocket-client
-import openpyxl
-import chardet
 import logging
-from tqdm import tqdm
-from PIL import Image
+import os
+import random
+import sys
 from typing import Any, Optional
 
-# 设置调试模式（修改 DEBUG 为 False 可关闭调试日志）
-DEBUG: bool = False
-if DEBUG:
-    logging.basicConfig(level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s")
-else:
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+import openpyxl  # pip install openpyxl
+import requests  # pip install requests
+from tqdm import tqdm  # pip install tqdm
 
-# 全局配置
-SERVER_ADDRESS: str = "127.0.0.1:8188"  # ComfyUI 默认端口
-CLIENT_ID: str = str(uuid.uuid4())
-current_dir: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# ---------------------------------------------------------------------------
+# 日志与全局常量
+# ---------------------------------------------------------------------------
+DEBUG: bool = False  # 修改为 True 可开启调试输出
+logging.basicConfig(
+    level=logging.DEBUG if DEBUG else logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+)
 
-# -------------------------------
-# ComfyUI API 相关函数
-# -------------------------------
+# WebUI 服务器地址，可通过环境变量覆盖
+SERVER_URL: str = os.getenv("WEBUI_SERVER_URL", "http://172.18.36.54:7862").rstrip("/")
+TXT2IMG_URL: str = f"{SERVER_URL}/sdapi/v1/txt2img"
 
-def enqueue_workflow(workflow: dict[str, Any]) -> dict[str, Any]:
-    """
-    将给定的 ComfyUI workflow 发送至 /prompt 接口，并返回服务器响应。
-    """
-    data = json.dumps({"prompt": workflow, "client_id": CLIENT_ID}).encode("utf-8")
-    req = urllib.request.Request(f"http://{SERVER_ADDRESS}/prompt", data=data)
-    with urllib.request.urlopen(req) as resp:
-        return json.loads(resp.read())
+CURRENT_DIR: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PROMPT_XLSX: str = os.path.join(CURRENT_DIR, "txt", "output.xlsx")
+IMAGE_DIR: str = os.path.join(CURRENT_DIR, "image")
+PARAMS_LOG: str = os.path.join(CURRENT_DIR, "temp", "params.jsonl")
+print(CURRENT_DIR)
+# 创建必要目录
+os.makedirs(IMAGE_DIR, exist_ok=True)
+os.makedirs(os.path.dirname(PARAMS_LOG), exist_ok=True)
 
-def fetch_image_data(filename: str, subfolder: str, folder_type: str) -> bytes:
-    """
-    通过 HTTP GET 请求从服务器获取图像二进制数据。
-    """
-    params = {
-        "filename": filename,
-        "subfolder": subfolder,
-        "type": folder_type
-    }
-    url_params = urllib.parse.urlencode(params)
-    url = f"http://{SERVER_ADDRESS}/view?{url_params}"
-    with urllib.request.urlopen(url) as response:
-        return response.read()
-
-def collect_generated_images(ws: websocket.WebSocket, workflow: dict[str, Any]) -> dict[str, bytes]:
-    """
-    通过 WebSocket 执行 workflow，并监听返回消息，
-    当检测到 SaveImage 节点执行完成后，通过 HTTP 获取生成的图像数据。
-    在接收到 "progress" 消息时，不输出日志，而是更新进度条显示当前进度。
-    """
-    response = enqueue_workflow(workflow)
-    prompt_id: str = response["prompt_id"]
-
-    image_metadata = None
-    pbar = None  # 用于显示进度条
-
-    while True:
-        raw_message = ws.recv()
-        if isinstance(raw_message, str):
-            message = json.loads(raw_message)
-            msg_type = message.get("type")
-            if msg_type == "progress":
-                # 更新进度条显示
-                value = message["data"].get("value", 0)
-                max_val = message["data"].get("max", 100)
-                if pbar is None:
-                    pbar = tqdm(total=max_val, desc="Progress", leave=True)
-                else:
-                    diff = value - pbar.n
-                    if diff > 0:
-                        pbar.update(diff)
-                continue  # 跳过后续处理，直接等待下一个消息
-            else:
-                if DEBUG:
-                    logging.debug("WS Msg: %s", message)
-            if msg_type == "executed" and message["data"].get("prompt_id") == prompt_id:
-                # 检测 SaveImage 节点（可能返回 "SaveImage" 或 "9"）
-                if message["data"].get("node") in ["SaveImage", "9"]:
-                    image_metadata = message["data"]["output"].get("images")
-            if msg_type == "executing" and message["data"].get("node") is None:
-                break
-        else:
-            pass
-
-    if pbar is not None:
-        pbar.close()
-
-    images: dict[str, bytes] = {}
-    if image_metadata:
-        for img_info in image_metadata:
-            filename = img_info.get("filename", "")
-            subfolder = img_info.get("subfolder", "")
-            folder_type = img_info.get("type", "")
-            img_bytes = fetch_image_data(filename, subfolder, folder_type)
-            images[filename] = img_bytes
-    return images
-
-def build_workflow(
-    positive_prompt: str,
-    negative_prompt: str,
-    width: int,
-    height: int,
-    cfg: float,
-    sampler_name: str,
-    steps: int,
-    model_name: str,
-    clip_name1: str,
-    clip_name2: str,
-    clip_name3: str,
-    seed: Optional[int] = None,
-    seed_behavior: str = "randomize",
-    scheduler: str = "normal",
-    denoise: float = 1.0,
-    batch_size: int = 1
-) -> dict[str, Any]:
-    """
-    根据参数生成适用于 ComfyUI 的 workflow 字典。
-    所有绘图相关参数均在此配置。
-    """
-    if seed is None:
-        seed = random.randint(0, 2**31 - 1)
-    return {
-        "3": {
-            "inputs": {
-                "seed": seed,
-                "seed_behavior": seed_behavior,
-                "steps": steps,
-                "cfg": cfg,
-                "sampler_name": sampler_name,
-                "scheduler": scheduler,
-                "denoise": denoise,
-                "model": ["4", 0],
-                "positive": ["6", 0],
-                "negative": ["7", 0],
-                "latent_image": ["5", 0]
-            },
-            "class_type": "KSampler",
-            "_meta": {"title": "K采样器"}
-        },
-        "4": {
-            "inputs": {"ckpt_name": model_name},
-            "class_type": "CheckpointLoaderSimple",
-            "_meta": {"title": "Checkpoint加载器（简易）"}
-        },
-        "5": {
-            "inputs": {"width": width, "height": height, "batch_size": batch_size},
-            "class_type": "EmptyLatentImage",
-            "_meta": {"title": "空Latent图像"}
-        },
-        "6": {
-            "inputs": {"text": positive_prompt, "clip": ["10", 0]},
-            "class_type": "CLIPTextEncode",
-            "_meta": {"title": "CLIP文本编码"}
-        },
-        "7": {
-            "inputs": {"text": negative_prompt, "clip": ["10", 0]},
-            "class_type": "CLIPTextEncode",
-            "_meta": {"title": "CLIP文本编码"}
-        },
-        "8": {
-            "inputs": {"samples": ["3", 0], "vae": ["4", 2]},
-            "class_type": "VAEDecode",
-            "_meta": {"title": "VAE解码"}
-        },
-        "9": {
-            "inputs": {"filename_prefix": "ComfyUI", "images": ["8", 0]},
-            "class_type": "SaveImage",
-            "_meta": {"title": "保存图像"}
-        },
-        "10": {
-            "inputs": {"clip_name1": clip_name1, "clip_name2": clip_name2, "clip_name3": clip_name3},
-            "class_type": "TripleCLIPLoader",
-            "_meta": {"title": "三重CLIP加载器"}
-        }
-    }
-
-# -------------------------------
-# Excel 相关函数
-# -------------------------------
+# ---------------------------------------------------------------------------
+# Excel 工具函数
+# ---------------------------------------------------------------------------
 
 def get_prompts(path: str) -> list[str]:
-    """
-    从 Excel 文件中读取提示语，取第 C 列中非空的单元格内容。
-    """
-    prompts_file = os.path.join(current_dir, path)
-    wb = openpyxl.load_workbook(prompts_file)
+    """读取指定 Excel 文件第 C 列中的非空单元格，返回提示词列表。"""
+
+    wb = openpyxl.load_workbook(path)
     sheet = wb.active
-    prompts = [cell.value for cell in sheet['C'] if cell.value]
+    prompts = [cell.value for cell in sheet["C"][1:] if cell.value]
     wb.close()
     return prompts
 
-# -------------------------------
-# 使用 ComfyUI API 绘图流程
-# -------------------------------
+# ---------------------------------------------------------------------------
+# WebUI 相关辅助函数
+# ---------------------------------------------------------------------------
 
-def run_comfyui_program(prompts_to_redraw: Optional[list[int]] = None, extra_data: dict[str, Any] = {}) -> None:
-    """
-    使用 ComfyUI API 根据 Excel 中的提示语生成图像。
-    若 prompts_to_redraw 为 None，则处理所有提示；否则仅处理指定下标的提示（下标从 0 开始）。
-    extra_data 中可包含额外的 workflow 参数，会 merge 到 build_workflow 的参数中。
-    """
-    prompts = get_prompts(os.path.join('txt', 'txt2.xlsx'))
-    image_dir = os.path.join(current_dir, 'image')
-    os.makedirs(image_dir, exist_ok=True)
+def _encode_image_to_base64(path: str) -> str:
+    """将本地图片文件编码为 base64 字符串。"""
 
-    # 枚举所有提示；若指定 prompts_to_redraw，则只处理对应索引的提示
-    prompts_to_process = list(enumerate(prompts))
-    if prompts_to_redraw is not None:
-        prompts_to_process = [(i, p) for i, p in prompts_to_process if i in prompts_to_redraw]
+    with open(path, "rb") as f:
+        return base64.b64encode(f.read()).decode("utf-8")
 
-    existing_files = set(os.listdir(image_dir))
 
-    # 默认绘图参数
-    default_params = {
+def txt2img(payload: dict[str, Any]) -> bytes:
+    """调用 WebUI 的 txt2img 接口并返回第一张图片的二进制数据。"""
+    resp = requests.post(TXT2IMG_URL, json=payload, timeout=600)
+    resp.raise_for_status()
+    data = resp.json()
+    if not data.get("images"):
+        raise RuntimeError("WebUI 未返回任何图像！")
+    return base64.b64decode(data["images"][0])
+
+# ---------------------------------------------------------------------------
+# 核心生成流程
+# ---------------------------------------------------------------------------
+
+def run_webui_program(
+    prompts_to_redraw: Optional[list[int]] = None,
+    extra_params: dict[str, Any] | None = None,
+    control_image: str | None = None,
+) -> None:
+    """批量生成（或重绘）PNG 图片。"""
+
+    prompts = get_prompts(PROMPT_XLSX)
+
+    # 需要处理的索引集合
+    indices = (
+        prompts_to_redraw
+        if prompts_to_redraw is not None
+        else list(range(len(prompts)))
+    )
+
+    # 默认生成参数，可根据需要修改
+    params: dict[str, Any] = {
         "width": 1024,
-        "height": 1024,
-        "cfg": 7.0,
-        "sampler_name": "euler",
-        "steps": 100,
-        "model_name": "sd3.5_large.safetensors",
-        "clip_name1": "clip_g.safetensors",
-        "clip_name2": "clip_l.safetensors",
-        "clip_name3": "t5xxl_fp16.safetensors",
-        "seed": 916314980333822,
-        "seed_behavior": "randomize",
-        "scheduler": "normal",
-        "denoise": 1.0,
-        "batch_size": 1
+        "height": 512,
+        "steps": 60,
+        "sampler_name": "DPM++ 3M SDE",
+        "scheduler": "Karras",
+        "batch_size": 1,
+        "cfg_scale": 13.5,
+        "seed": -1,
+        "enable_hr": False,
+        "hr_scale": 2,
+        "hr_upscaler": "Latent",
+        "denoising_strength": 0.7,
     }
-    default_params.update(extra_data)
+    if extra_params:
+        params.update(extra_params)
 
-    with open("../config.json", "r", encoding="utf-8") as f:
-        config = json.load(f)
+    # 读取用户自定义配置（若存在）
+    cfg_path = os.path.join(CURRENT_DIR, "config.json")
+    user_cfg: dict[str, str] = {}
+    if os.path.exists(cfg_path):
+        with open(cfg_path, "r", encoding="utf-8") as f:
+            user_cfg = json.load(f)
+    data = user_cfg.get("data", {})
+    negative_prompt: str = data.get("negative_prompt", "")
 
+    # 控制图（如果提供）
+    encoded_control_img = _encode_image_to_base64(control_image) if control_image else None
+    encoded_regional_img = True
 
+    for idx in tqdm(indices, desc="生成中", unit="张"):
+        import re
+        prompt_core = prompts[idx]
+        positive_prompt = prompt_core
 
-    for i, prompt_text in tqdm(prompts_to_process, desc='绘图进度', unit='image'):
-        # 直接使用 Excel 中的提示作为正面提示，负面提示为空
-        more_details = config.get("more_details")
-        positive_prompt = f"{prompt_text},{more_details}"
-        negative_prompt = config.get("negative_prompt")
+        # Find the first occurrence of "(number..." in the prompt
+        print(f"提示词：{prompt_core}")
+        match = re.search(r'\(\d+[^,)]*', prompt_core)
+        if match:
+            pattern_start = match.group(0)
+            number_match = re.search(r'\d+', pattern_start)
+            num_of_characters_pattern = int(number_match.group()) if number_match else None
+        else:
+            num_of_characters_pattern = None
 
-        output_file = f'output_{i+1}.png'
-        if output_file in existing_files and prompts_to_redraw is None:
+        if num_of_characters_pattern and num_of_characters_pattern >= 2:
+            ratio = ",".join(["1"] * num_of_characters_pattern)
+        else:
+            ratio = "1"
+        # 构建 payload
+        payload: dict[str, Any] = {
+            "prompt": positive_prompt,
+            "negative_prompt": negative_prompt,
+            **{k: params[k] for k in (
+                "width",
+                "height",
+                "steps",
+                "sampler_name",
+                "scheduler",
+                "batch_size",
+                "cfg_scale",
+                "seed",
+                "enable_hr",
+                "hr_scale",
+                "hr_upscaler",
+                "denoising_strength",
+            )},
+        }
+
+        if encoded_control_img:
+            payload.setdefault("alwayson_scripts", {}).update(
+                {
+                    "controlnet": {
+                        "args": [
+                            {
+                                "enabled": True,
+                                "image": encoded_control_img,
+                                "module": "ip-adapter-auto",
+                                "model": "ip-adapter_sd15_plus [32cd8f7f]",
+                            }
+                        ]
+                    },
+                }
+            )
+        if encoded_regional_img:
+            payload.setdefault("alwayson_scripts", {}).update(
+                {
+                    "Regional Prompter": {
+                        "args": [
+                            True,                  # 1  Active
+                            False,                 # 2  debug
+                            "Matrix",              # 3  Mode
+                            "Vertical",            # 4  Mode (Matrix)
+                            "Mask",                # 5  Mode (Mask)
+                            "Prompt",              # 6  Mode (Prompt)
+                            ratio,               # 7  Ratios
+                            "",                    # 8  Base Ratios
+                            False,                 # 9  Use Base
+                            True,                 # 10 Use Common
+                            False,                 # 11 Use Neg-Common
+                            "Attention",           # 12 Calcmode
+                            False,                 # 13 Not Change AND
+                            "0",                   # 14 LoRA Textencoder
+                            "0",                   # 15 LoRA U-Net
+                            "0",                   # 16 Threshold
+                            "",                    # 17 Mask (图片路径)
+                            "0",                   # 18 LoRA stop step
+                            "0",                   # 19 LoRA Hires stop step
+                            False                  # 20 flip
+                        ]
+                    }}
+            )
+        try:
+            img_bytes = txt2img(payload)
+        except Exception as exc:
+            logging.error("生成失败（#%d）：%s", idx + 1, exc)
             continue
 
-        workflow = build_workflow(
-            positive_prompt=positive_prompt,
-            negative_prompt=negative_prompt,
-            width=default_params["width"],
-            height=default_params["height"],
-            cfg=default_params["cfg"],
-            sampler_name=default_params["sampler_name"],
-            steps=default_params["steps"],
-            model_name=default_params["model_name"],
-            clip_name1=default_params["clip_name1"],
-            clip_name2=default_params["clip_name2"],
-            clip_name3=default_params["clip_name3"],
-            seed=default_params["seed"],
-            seed_behavior=default_params["seed_behavior"],
-            scheduler=default_params["scheduler"],
-            denoise=default_params["denoise"],
-            batch_size=default_params["batch_size"]
-        )
+        out_name = f"output_{idx + 1}.png"
+        out_path = os.path.join(IMAGE_DIR, out_name)
+        with open(out_path, "wb") as f:
+            f.write(img_bytes)
+        logging.info("图片已保存 → %s", out_path)
 
-        # 使用 WebSocket 与 ComfyUI 通信
-        ws = websocket.WebSocket()
-        ws.connect(f"ws://{SERVER_ADDRESS}/ws?clientId={CLIENT_ID}")
-        generated_images = collect_generated_images(ws, workflow)
-        ws.close()
+        # 记录参数（JSONL）
+        with open(PARAMS_LOG, "a", encoding="utf-8") as fp:
+            json.dump({out_name: payload}, fp, ensure_ascii=False)
+            fp.write("\n")
 
-        if generated_images:
-            for fname, img_data in generated_images.items():
-                save_path = os.path.join(image_dir, output_file)
-                with open(save_path, "wb") as f:
-                    f.write(img_data)
-                logging.info("Saved image to: %s", save_path)
-            # 保存绘图参数
-            temp_dir = os.path.join(current_dir, 'temp')
-            os.makedirs(temp_dir, exist_ok=True)
-            with open(os.path.join(temp_dir, 'params.json'), 'a', encoding="utf-8") as f:
-                json.dump({output_file: workflow}, f, ensure_ascii=False)
-                f.write('\n')
-        else:
-            logging.error("未获取到图片：%s", output_file)
+# ---------------------------------------------------------------------------
+# 交互式 CLI
+# ---------------------------------------------------------------------------
 
-# -------------------------------
-# 主程序流程
-# -------------------------------
-
-if __name__ == '__main__':
+def main() -> None:
     print("BADAPPLE")
-
-    # 固定使用本地 ComfyUI API 地址
-    cloud_address = f"http://{SERVER_ADDRESS}"
-    print("使用本地ComfyUI")
-
-    print("ComfyUI 正在绘图，请稍后...")
-    run_comfyui_program(extra_data={})
-    print("绘图完成，请检查图片。")
+    print("WEBUI 模式已启动，正在生成图片…")
+    run_webui_program()
+    print("首轮生成完成，请前往 ./image 文件夹查看。")
 
     while True:
-        user_input = input("请输入需要重绘的图片对应的数字（多个数字用空格隔开，输入N退出程序）: ")
+        user_input = input("请输入需要重绘的图片编号（空格分隔，输入 N 退出）：").strip()
         if user_input.upper() == "N":
             break
 
-        file_numbers_to_redraw = []
-        for s in user_input.split():
-            try:
-                idx = int(s.strip()) - 1
-                file_name = f"output_{idx+1}.png"
-                file_path = os.path.join(current_dir, 'image', file_name)
-                if os.path.exists(file_path):
-                    file_numbers_to_redraw.append(idx)
-                    os.remove(file_path)
-                    print(f"重绘图片: {file_name}")
-                else:
-                    print(f"无效图片: {file_name}")
-            except ValueError:
-                print(f"无效输入: {s.strip()}，跳过")
+        try:
+            indices = [int(part) - 1 for part in user_input.split() if part.isdigit() and int(part) > 0]
+        except ValueError:
+            print("输入格式有误，请重新输入！")
+            continue
 
-        if file_numbers_to_redraw:
-            print("ComfyUI 正在重绘，请稍后...")
-            run_comfyui_program(prompts_to_redraw=file_numbers_to_redraw, extra_data={})
-            print("重绘完成，请检查图片。")
-        else:
-            print("没有需要重绘的图片。")
+        if not indices:
+            print("未检测到有效编号，跳过。")
+            continue
+
+        # 删除旧图，为重绘做准备
+        for n in indices:
+            fname = f"output_{n + 1}.png"
+            fpath = os.path.join(IMAGE_DIR, fname)
+            if os.path.exists(fpath):
+                os.remove(fpath)
+                print(f"已删除旧文件：{fname}")
+            else:
+                print(f"文件不存在，跳过：{fname}")
+
+        print("开始重绘…")
+        run_webui_program(prompts_to_redraw=indices)
+        print("重绘完成！")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\n用户中断，程序已退出。")
+        sys.exit(0)
