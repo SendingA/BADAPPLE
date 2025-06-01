@@ -22,7 +22,7 @@ class Judger:
         
         self.examples = examples or self.default_examples()
             
-        self.messages = [({
+        self.messages = [{
             "role": "user",
             "content": [
                 {
@@ -34,7 +34,7 @@ class Judger:
                         "Each case contains a prompt, a good image, and a bad image."
                 },
             ]
-        })]
+        }]
         
         for example in self.examples:
             self.messages[0]["content"] += [
@@ -88,7 +88,9 @@ class Judger:
                 ]
             }
         ]
-
+        
+        # print(messages)
+        
         response = self.client.chat.completions.create(
             model="gpt-4.1-mini",
             messages=messages,
@@ -101,21 +103,17 @@ class Judger:
     def default_examples(self):
         examples = [
                 {
-                    "prompt": """middle aged king with dignified expression, splendid golden robe, gem encrusted crown, finely crafted sword, steady steps, (beautiful detailed eyes, beautiful detailed lips, extremely detailed face and beard, sharp focus), ultra detailed, realistic, photorealistic, masterpiece, best quality, vivid colors, HDR, studio lighting, dynamic pose, elegant atmosphere,
-==BREAK==
-(new queen in her forties), pale skin, deep brown curls, dark brown eyes, brocade gown black and red, gold thread embroidery on hem, emerald necklace and earrings, multiple rings, noble yet arrogant aura, (beautiful detailed eyes, beautiful detailed lips, long eyelashes, extremely detailed face), magnificent enchanted mirror, large silver mirror with black marble frame, intricate carvings, smooth surface shimmering with strange light, mysterious aura, held in hands, ultra fine painting, sharp focus, physically based rendering, professional, UHD, 4k resolution, perfect lighting, detailed background, royal hall setting, grand architecture, aesthetic composition""",
+                    "prompt": "middle aged king with dignified expression, splendid golden robe, gem encrusted crown, finely crafted sword, steady steps, (beautiful detailed eyes, beautiful detailed lips, extremely detailed face and beard, sharp focus), ultra detailed, realistic, photorealistic, masterpiece, best quality, vivid colors, HDR, studio lighting, dynamic pose, elegant atmosphere,\n==BREAK==\n(new queen in her forties), pale skin, deep brown curls, dark brown eyes, brocade gown black and red, gold thread embroidery on hem, emerald necklace and earrings, multiple rings, noble yet arrogant aura, (beautiful detailed eyes, beautiful detailed lips, long eyelashes, extremely detailed face), magnificent enchanted mirror, large silver mirror with black marble frame, intricate carvings, smooth surface shimmering with strange light, mysterious aura, held in hands, ultra fine painting, sharp focus, physically based rendering, professional, UHD, 4k resolution, perfect lighting, detailed background, royal hall setting, grand architecture, aesthetic composition",
                     "good_image": None,
                     "bad_image": None,
                 },
                 {
-                    "prompt": """massive silver mirror, black marble frame intricately carved with complex patterns, smooth as water, emitting unusual glow, revealing image of Snow White, gentle and dignified teenage girl around fifteen or sixteen years old, skin as white as snow, rosy cheeks, long black hair flowing down to waist, wearing light blue silk dress adorned with delicate lace, silver high heels on feet, beautiful detailed eyes, beautiful detailed lips, extremely detailed face, long eyelashes,
-==BREAK==
-(new Queen), woman in her forties, beautiful but somewhat stern appearance, pale skin, deep brown curly hair, dark brown eyes, dressed in black and red brocade gown embroidered with gold thread at hem, wearing emerald necklace and earrings, multiple rings on fingers, exuding air of nobility tinged with arrogance, (masterpiece:1.4, best quality), ultra-detailed, realistic, photorealistic, HDR, vivid colors, sharp focus, studio lighting, physically-based rendering, 8k resolution""",
+                    "prompt": "massive silver mirror, black marble frame intricately carved with complex patterns, smooth as water, emitting unusual glow, revealing image of Snow White, gentle and dignified teenage girl around fifteen or sixteen years old, skin as white as snow, rosy cheeks, long black hair flowing down to waist, wearing light blue silk dress adorned with delicate lace, silver high heels on feet, beautiful detailed eyes, beautiful detailed lips, extremely detailed face, long eyelashes,\n==BREAK==\n(new Queen), woman in her forties, beautiful but somewhat stern appearance, pale skin, deep brown curly hair, dark brown eyes, dressed in black and red brocade gown embroidered with gold thread at hem, wearing emerald necklace and earrings, multiple rings on fingers, exuding air of nobility tinged with arrogance, (masterpiece:1.4, best quality), ultra-detailed, realistic, photorealistic, HDR, vivid colors, sharp focus, studio lighting, physically-based rendering, 8k resolution",
                     "good_image": None,
                     "bad_image": None,
                 },
                 {
-                    "prompt": """a woman, about forty years old, striking beauty with a stern expression, pale skin, deep brown curls, dark brown eyes blazing with fury, long brocade gown in black and red, golden thread embroidery on the hem, emerald necklace and earrings, fingers adorned with several rings, noble and arrogant aura, face contorted with rage, hands clenched into tight fists, beautiful detailed eyes, sharp facial features, long eyelashes, ultra-detailed, (realistic, photorealistic:1.37), studio lighting, vivid colors, HDR, UHD, sharp focus, professional, (masterpiece:1.2), best quality, 4k, 8k, highres""",
+                    "prompt": "a woman, about forty years old, striking beauty with a stern expression, pale skin, deep brown curls, dark brown eyes blazing with fury, long brocade gown in black and red, golden thread embroidery on the hem, emerald necklace and earrings, fingers adorned with several rings, noble and arrogant aura, face contorted with rage, hands clenched into tight fists, beautiful detailed eyes, sharp facial features, long eyelashes, ultra-detailed, (realistic, photorealistic:1.37), studio lighting, vivid colors, HDR, UHD, sharp focus, professional, (masterpiece:1.2), best quality, 4k, 8k, highres",
                     "good_image": None,
                     "bad_image": None,
                 },

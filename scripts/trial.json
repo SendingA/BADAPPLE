@@ -1,0 +1,49 @@
+[
+    {'role': 'user', 'content': [
+            {'type': 'text', 'text': 'Hi, I am using Stable Diffusion to generate images. I need you to judge whether the generated images match their prompts, especially the content information. For better understanding, here are 3 example cases. Each case contains a prompt, a good image, and a bad image.'
+            },
+            {'type': 'text', 'text': 'middle aged king with dignified expression, splendid golden robe, gem encrusted crown, finely crafted sword, steady steps, (beautiful detailed eyes, beautiful detailed lips, extremely detailed face and beard, sharp focus), ultra detailed, realistic, photorealistic, masterpiece, best quality, vivid colors, HDR, studio lighting, dynamic pose, elegant atmosphere,\n==BREAK==\n(new queen in her forties), pale skin, deep brown curls, dark brown eyes, brocade gown black and red, gold thread embroidery on hem, emerald necklace and earrings, multiple rings, noble yet arrogant aura, (beautiful detailed eyes, beautiful detailed lips, long eyelashes, extremely detailed face), magnificent enchanted mirror, large silver mirror with black marble frame, intricate carvings, smooth surface shimmering with strange light, mysterious aura, held in hands, ultra fine painting, sharp focus, physically based rendering, professional, UHD,
+                4k resolution, perfect lighting, detailed background, royal hall setting, grand architecture, aesthetic composition'
+            },
+            {'type': 'image_url', 'image_url': {'url': {}
+                }
+            },
+            {'type': 'image_url', 'image_url': {'url': {}
+                }
+            },
+            {'type': 'text', 'text': 'massive silver mirror, black marble frame intricately carved with complex patterns, smooth as water, emitting unusual glow, revealing image of Snow White, gentle and dignified teenage girl around fifteen or sixteen years old, skin as white as snow, rosy cheeks, long black hair flowing down to waist, wearing light blue silk dress adorned with delicate lace, silver high heels on feet, beautiful detailed eyes, beautiful detailed lips, extremely detailed face, long eyelashes,\n==BREAK==\n(new Queen), woman in her forties, beautiful but somewhat stern appearance, pale skin, deep brown curly hair, dark brown eyes, dressed in black and red brocade gown embroidered with gold thread at hem, wearing emerald necklace and earrings, multiple rings on fingers, exuding air of nobility tinged with arrogance, (masterpiece: 1.4, best quality), ultra-detailed, realistic, photorealistic, HDR, vivid colors, sharp focus, studio lighting, physically-based rendering,
+                8k resolution'
+            },
+            {'type': 'image_url', 'image_url': {'url': {}
+                }
+            },
+            {'type': 'image_url', 'image_url': {'url': {}
+                }
+            },
+            {'type': 'text', 'text': 'a woman, about forty years old, striking beauty with a stern expression, pale skin, deep brown curls, dark brown eyes blazing with fury, long brocade gown in black and red, golden thread embroidery on the hem, emerald necklace and earrings, fingers adorned with several rings, noble and arrogant aura, face contorted with rage, hands clenched into tight fists, beautiful detailed eyes, sharp facial features, long eyelashes, ultra-detailed, (realistic, photorealistic: 1.37), studio lighting, vivid colors, HDR, UHD, sharp focus, professional, (masterpiece: 1.2), best quality,
+                4k,
+                8k, highres'
+            },
+            {'type': 'image_url', 'image_url': {'url': {}
+                }
+            },
+            {'type': 'image_url', 'image_url': {'url': {}
+                }
+            }
+        ]
+    },
+    {'role': 'user', 'content': [
+            {'type': 'text', 'text': "Now, I will give you a prompt and a images. Please tell me if the images match the prompt. YOUR ANSWER MUST BE 'Good' OR 'Bad' WITHOUT ANY OTHER DESCRIPTIONS!"
+            }
+        ]
+    },
+    {'role': 'user', 'content': [
+            {'type': 'text', 'text': ('middle aged king with dignified expression, splendid golden robe, gem encrusted crown, finely crafted sword, steady steps, (beautiful detailed eyes, beautiful detailed lips, extremely detailed face and beard, sharp focus), ultra detailed, realistic, photorealistic, masterpiece, best quality, vivid colors, HDR, studio lighting, dynamic pose, elegant atmosphere,\n==BREAK==\n(new queen in her forties), pale skin, deep brown curls, dark brown eyes, brocade gown black and red, gold thread embroidery on hem, emerald necklace and earrings, multiple rings, noble yet arrogant aura, (beautiful detailed eyes, beautiful detailed lips, long eyelashes, extremely detailed face), magnificent enchanted mirror, large silver mirror with black marble frame, intricate carvings, smooth surface shimmering with strange light, mysterious aura, held in hands, ultra fine painting, sharp focus, physically based rendering, professional, UHD,
+                4k resolution, perfect lighting, detailed background, royal hall setting, grand architecture, aesthetic composition',)
+            },
+            {'type': 'image_url', 'image_url': {'url': {}
+                }
+            }
+        ]
+    }
+]
