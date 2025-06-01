@@ -13,6 +13,8 @@ scripts_dir = project_dir / "scripts"
 sys.path.append(str(project_dir))
 sys.path.append(str(scripts_dir))
 
+gr.set_static_paths([str(project_dir)])
+
 # 导入各个步骤的模块
 try:
     import gradio_utils.step0
@@ -282,10 +284,20 @@ with gr.Blocks(title="小说转视频生成器", theme=gr.themes.Soft()) as demo
             """)
 
 if __name__ == "__main__":
+    
+    
     demo.launch(
         server_name="0.0.0.0",
         server_port=7870,
         share=False,
         debug=True,
-        allowed_paths=[str(project_dir), str(scripts_dir)]
+        allowed_paths=[
+            str(project_dir), 
+            str(scripts_dir),
+            str(Path(project_dir) / "image"),
+            str(Path(project_dir) / "temp"),
+            str(Path(project_dir) / "voice"),
+            str(Path(project_dir) / "video")
+        ]
+        
     )

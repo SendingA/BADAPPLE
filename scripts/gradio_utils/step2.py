@@ -135,7 +135,7 @@ def get_scenario_display():
         for img_info in group['images']:
             display_html += f"""
                 <div style="text-align: center;">
-                    <img src="file://{img_info['path']}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 3px;">
+                    <img src="/gradio_api/file={img_info['path']}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 3px;">
                     <p style="font-size: 12px; margin: 5px 0;">{img_info['name']}</p>
                     <p style="font-size: 10px; color: #999;">索引: {img_info['index']}</p>
                 </div>
@@ -260,10 +260,6 @@ def create_interface():
                     height=400
                 )
                 
-                # 场景分组展示
-                with gr.Accordion("📋 按场景查看", open=False):
-                    scenario_display = gr.HTML(label="场景分组")
-                
                 # 重绘功能
                 gr.Markdown("#### 重绘功能")
                 regenerate_indices = gr.Textbox(
@@ -277,6 +273,11 @@ def create_interface():
                     clear_indices_btn = gr.Button("🗑️ 清空选择", variant="secondary")
                 
                 regenerate_output = gr.Textbox(label="重绘结果", lines=2)
+                
+                # 场景分组展示
+                with gr.Accordion("📋 按场景查看", open=False):
+                    scenario_display = gr.HTML(label="场景分组")
+                
         
         # 事件绑定
         test_servers_btn.click(

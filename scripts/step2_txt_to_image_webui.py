@@ -83,8 +83,7 @@ log_lock = threading.Lock()
 # ---------------------------------------------------------------------------
 def count_character(prompts: list[str]) ->list[int]:
     """统计每个提示词中字符的数量，返回一个整数列表。"""
-    for prompt in prompts:
-        return [prompt.count('BREAK') for prompt in prompts]
+    return [prompt.count('BREAK') for prompt in prompts]
 
 
 def get_prompts(path: str) -> list[str]:
