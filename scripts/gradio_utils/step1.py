@@ -12,13 +12,6 @@ scripts_dir = project_dir / "scripts"
 sys.path.append(str(project_dir))
 sys.path.append(str(scripts_dir))
 
-def set_api_key(api_key):
-    """设置 OpenAI API Key"""
-    if api_key:
-        os.environ["OPENAI_API_KEY"] = api_key
-        return "✅ API Key 已设置"
-    return "❌ 请输入有效的 API Key"
-
 def run_step1(min_sentence_length, trigger_word, api_key):
     """执行 Step 1: 提取关键词（移除文件上传）"""
     try:

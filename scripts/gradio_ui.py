@@ -25,14 +25,6 @@ except ImportError as e:
     print(f"导入模块失败: {e}")
     print("请确保所有脚本文件存在于 scripts 目录中")
 
-def set_api_key(api_key):
-    """设置 OpenAI API Key"""
-    if api_key:
-        os.environ["OPENAI_API_KEY"] = api_key
-        return "✅ API Key 已设置"
-    return "❌ 请输入有效的 API Key"
-
-
 def run_step2(webui_url, width, height, steps, sampler, scheduler, cfg_scale, seed, 
               enable_hr, hr_scale, hr_upscaler, denoising_strength, 
               more_details, negative_prompt, control_image):
