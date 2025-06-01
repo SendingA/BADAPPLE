@@ -96,8 +96,8 @@ async def extract_character_features(text):
 
 async def divide_scenarios(text):
     prompt = f"""
-请将以下文本分割成多个正交的电影场景，每个场景需要有足够丰富的内容描述且尽可能保留原文，内容描述需要语义连贯上下场景衔接，所有场景可以覆盖整本小说内容。
-每个场景的描述格式如下，内容中仅包括小说的描述，不要出现其他无关信息，如果有角色的对白需要保留原文：
+请将以下文本细粒度分割成多个正交的电影场景，每个场景需要有丰富的内容描述且尽可能保留原文，内容描述需要语义连贯上下场景衔接，所有场景可以覆盖整本小说内容, 去除所有的对话内容。
+每个场景的描述格式如下，内容中仅包括小说的描述，不要生成冗余信息：
 
 {{场景[NUMBER]: 
 {{标题：[TITLE]
@@ -129,7 +129,8 @@ async def divide_scenarios(text):
 
 async def divide_image(text):
     prompt = f"""
-    请将下面的一个场景描述，分割成1~3个画面，你的目标是将该场景通过若干静态画面来展现，去除掉其中的人物对话部分，注意严格遵循原场景的文字描述去生成画面，不要添加任何额外信息。
+    请将下面的一个场景描述，分割成若干个画面，你的目标是将该场景通过若干静态画面来展现，去除掉其中的人物对话部分。注意严格遵循原场景的文字描述去生成画面，不要添加任何额外信息。
+
     请返回JSON格式响应，键值对为"画面[NUMBER]": "[Scene Description]"
     场景描述如下：{text}
     """
@@ -153,73 +154,16 @@ async def divide_image(text):
         return result
 
 
-async def process_scenario(scenario, scenario_index, total_scenarios):
-    """Process a single scenario and its images"""
-    chinese_content = scenario['内容']
-    image_json = await divide_image(chinese_content)
-    
-    rows = []
-    subimages = []
-    
-    for idx, image in enumerate(image_json.values()):
-        rows.append({
-            'Chinese Content': image, 
-            'Replaced Content': '', 
-            'SD Content': '', 
-            'SD Prompt': ''
-        })
-        subimages.append(idx)
-    
-    # Update scenario with subimage indices
-    scenario['子图索引'] = subimages
-    
-    print(f"✅ 处理完成场景 {scenario_index + 1}/{total_scenarios}")
-    return rows, scenario
-
-
 async def save_scenarios(scenarios_json):
-    """Process all scenarios concurrently"""
-    scenarios = list(scenarios_json.values())
-    
-    # Create semaphore to limit concurrent requests (adjust based on API limits)
-    semaphore = asyncio.Semaphore(5)
-    
-    async def process_with_semaphore(scenario, idx):
-        async with semaphore:
-            return await process_scenario(scenario, idx, len(scenarios))
-    
-    # Process all scenarios concurrently
-    tasks = [
-        process_with_semaphore(scenario, idx) 
-        for idx, scenario in enumerate(scenarios)
-    ]
-    
-    results = await asyncio.gather(*tasks)
-    
-    # Combine all rows and update scenarios
-    all_rows = []
-    start_index = 0
-    
-    for idx, (rows, updated_scenario) in enumerate(results):
-        # Update the subimage indices to be global indices
-        updated_scenario['子图索引'] = list(range(start_index, start_index + len(rows)))
-        start_index += len(rows)
-        all_rows.extend(rows)
-        
-        # Update the original scenarios_json
-        scenario_key = list(scenarios_json.keys())[idx]
-        scenarios_json[scenario_key] = updated_scenario
-
-    # Save updated scenarios
+    """Save scenarios and create empty CSV"""
+    # Save scenarios JSON
     async with aiofiles.open("场景分割.json", "w", encoding="utf-8") as f:
         await f.write(json.dumps(scenarios_json, indent=2, ensure_ascii=False))
     
-    # Save CSV
-    df = pd.DataFrame(all_rows)
-    df.to_csv('../txt/txt.csv', index=False)
-    
-    print(f"✅ 总共处理了 {len(scenarios)} 个场景，生成了 {len(all_rows)} 个图像")
+    scenarios_count = len(scenarios_json)
+    print(f"✅ 保存了 {scenarios_count} 个场景到 场景分割.json")
 
+    return scenarios_json
 
 async def async_main(text):
     print("BADAPPLE")
@@ -238,12 +182,15 @@ async def async_main(text):
     await asyncio.gather(scenarios_processing_task, config_update_task)
     
     print("🎉 所有任务完成！")
+    
+    # Return the results for UI display
+    return scenarios, character_info
 
 def main(text: str):
     with open("../input.txt", "w", encoding="utf-8") as file:
         file.write(text)
     
-    asyncio.run(async_main(text))
+    return asyncio.run(async_main(text))
 
 if __name__ == '__main__':
     asyncio.run(async_main())
