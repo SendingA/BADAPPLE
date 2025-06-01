@@ -9,24 +9,6 @@
 2. **保留** 了原有的中文注释、终端输出与交互逻辑；
 3. 仍然通过读取 ``txt/txt2.xlsx`` 第 **C** 列的非空单元格来获取提示词，
    生成的 PNG 将保存到 ``image/``；参数日志以 JSONL 形式写入 ``temp/params.jsonl``。
-
-<<<<<<< HEAD
-运行方式：
->>> python generate_images_webui.py
-=======
-import websocket  # pip install websocket-client
-import openpyxl
-import chardet
-import logging
-
-from IPython.core.debugger import prompt
-from tqdm import tqdm
-from PIL import Image
-from typing import Any, Optional
->>>>>>> origin/fuck
-
-执行后脚本会先生成所有图片，然后在终端提示：
->>> 请输入需要重绘的图片编号（空格分隔，输入 N 退出）：
 """
 
 from __future__ import annotations
@@ -57,7 +39,7 @@ SERVER_URL: str = os.getenv("WEBUI_SERVER_URL", "http://172.18.36.54:7862").rstr
 TXT2IMG_URL: str = f"{SERVER_URL}/sdapi/v1/txt2img"
 
 CURRENT_DIR: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PROMPT_XLSX: str = os.path.join(CURRENT_DIR, "txt", "output.xlsx")
+PROMPT_XLSX: str = os.path.join(CURRENT_DIR, "txt", "output2.xlsx")
 IMAGE_DIR: str = os.path.join(CURRENT_DIR, "image")
 PARAMS_LOG: str = os.path.join(CURRENT_DIR, "temp", "params.jsonl")
 print(CURRENT_DIR)
@@ -70,75 +52,21 @@ os.makedirs(os.path.dirname(PARAMS_LOG), exist_ok=True)
 # ---------------------------------------------------------------------------
 
 def get_prompts(path: str) -> list[str]:
-<<<<<<< HEAD
     """读取指定 Excel 文件第 C 列中的非空单元格，返回提示词列表。"""
 
     wb = openpyxl.load_workbook(path)
-=======
-    """
-    从 Excel 文件中读取提示语，取第 C 列中非空的单元格内容。
-    """
-    # import pandas as pd
-    prompts_file = os.path.join(current_dir, path)
-    # df = pd.read_csv(prompts_file)
-    # prompt
-    wb = openpyxl.load_workbook(prompts_file)
->>>>>>> origin/fuck
     sheet = wb.active
-    prompts = [cell.value for cell in sheet["C"][1:] if cell.value]
+    prompts = [cell.value for cell in sheet["C"] if cell.value]
     wb.close()
     return prompts
 
-<<<<<<< HEAD
 # ---------------------------------------------------------------------------
 # WebUI 相关辅助函数
 # ---------------------------------------------------------------------------
-=======
-# -------------------------------
-# 使用 ComfyUI API 绘图流程
-# -------------------------------
-
-def run_comfyui_program(prompts_to_redraw: Optional[list[int]] = None, extra_data: dict[str, Any] = {}) -> None:
-    """
-    使用 ComfyUI API 根据 Excel 中的提示语生成图像。
-    若 prompts_to_redraw 为 None，则处理所有提示；否则仅处理指定下标的提示（下标从 0 开始）。
-    extra_data 中可包含额外的 workflow 参数，会 merge 到 build_workflow 的参数中。
-    """
-    prompts = get_prompts(os.path.join('txt', 'output.xlsx'))
-    image_dir = os.path.join(current_dir, 'image')
-    os.makedirs(image_dir, exist_ok=True)
-
-    # 枚举所有提示；若指定 prompts_to_redraw，则只处理对应索引的提示
-    prompts_to_process = list(enumerate(prompts))
-    if prompts_to_redraw is not None:
-        prompts_to_process = [(i, p) for i, p in prompts_to_process if i in prompts_to_redraw]
-
-    existing_files = set(os.listdir(image_dir))
-
-    # 默认绘图参数
-    default_params = {
-        "width": 1024,
-        "height": 1024,
-        "cfg": 7.0,
-        "sampler_name": "euler",
-        "steps": 100,
-        "model_name": "sd3.5_large.safetensors",
-        "clip_name1": "clip_g.safetensors",
-        "clip_name2": "clip_l.safetensors",
-        "clip_name3": "t5xxl_fp16.safetensors",
-        "seed": 916314980333822,
-        "seed_behavior": "randomize",
-        "scheduler": "normal",
-        "denoise": 1.0,
-        "batch_size": 1
-    }
-    default_params.update(extra_data)
->>>>>>> origin/fuck
 
 def _encode_image_to_base64(path: str) -> str:
     """将本地图片文件编码为 base64 字符串。"""
 
-<<<<<<< HEAD
     with open(path, "rb") as f:
         return base64.b64encode(f.read()).decode("utf-8")
 
@@ -151,12 +79,6 @@ def txt2img(payload: dict[str, Any]) -> bytes:
     if not data.get("images"):
         raise RuntimeError("WebUI 未返回任何图像！")
     return base64.b64decode(data["images"][0])
-=======
-    for i, prompt_text in tqdm(prompts_to_process, desc='绘图进度', unit='image'):
-        more_details = config.get("more_details")
-        positive_prompt = f"{prompt_text},{more_details}"
-        negative_prompt = config.get("negative_prompt")
->>>>>>> origin/fuck
 
 # ---------------------------------------------------------------------------
 # 核心生成流程
@@ -169,7 +91,7 @@ def run_webui_program(
 ) -> None:
     """批量生成（或重绘）PNG 图片。"""
 
-    prompts = get_prompts(PROMPT_XLSX)
+    prompts = get_prompts(PROMPT_XLSX)[1:]
 
     # 需要处理的索引集合
     indices = (
@@ -182,12 +104,12 @@ def run_webui_program(
     params: dict[str, Any] = {
         "width": 1024,
         "height": 512,
-        "steps": 60,
+        "steps": 50,
         "sampler_name": "DPM++ 3M SDE",
         "scheduler": "Karras",
         "batch_size": 1,
-        "cfg_scale": 13.5,
-        "seed": -1,
+        "cfg_scale": 7,
+        "seed": -1,  # -1 代表 WebUI 随机种子
         "enable_hr": False,
         "hr_scale": 2,
         "hr_upscaler": "Latent",
@@ -202,32 +124,17 @@ def run_webui_program(
     if os.path.exists(cfg_path):
         with open(cfg_path, "r", encoding="utf-8") as f:
             user_cfg = json.load(f)
-    data = user_cfg.get("data", {})
-    negative_prompt: str = data.get("negative_prompt", "")
+
+    user_cfg_data = user_cfg.get("data", {})
+    negative_prompt: str = user_cfg_data.get("negative_prompt", "")
 
     # 控制图（如果提供）
     encoded_control_img = _encode_image_to_base64(control_image) if control_image else None
-    encoded_regional_img = True
 
     for idx in tqdm(indices, desc="生成中", unit="张"):
-        import re
         prompt_core = prompts[idx]
-        positive_prompt = prompt_core
+        positive_prompt = f"{prompt_core}"
 
-        # Find the first occurrence of "(number..." in the prompt
-        print(f"提示词：{prompt_core}")
-        match = re.search(r'\(\d+[^,)]*', prompt_core)
-        if match:
-            pattern_start = match.group(0)
-            number_match = re.search(r'\d+', pattern_start)
-            num_of_characters_pattern = int(number_match.group()) if number_match else None
-        else:
-            num_of_characters_pattern = None
-
-        if num_of_characters_pattern and num_of_characters_pattern >= 2:
-            ratio = ",".join(["1"] * num_of_characters_pattern)
-        else:
-            ratio = "1"
         # 构建 payload
         payload: dict[str, Any] = {
             "prompt": positive_prompt,
@@ -248,50 +155,37 @@ def run_webui_program(
             )},
         }
 
-        if encoded_control_img:
-            payload.setdefault("alwayson_scripts", {}).update(
-                {
-                    "controlnet": {
-                        "args": [
-                            {
-                                "enabled": True,
-                                "image": encoded_control_img,
-                                "module": "ip-adapter-auto",
-                                "model": "ip-adapter_sd15_plus [32cd8f7f]",
-                            }
-                        ]
-                    },
+        payload.setdefault("alwayson_scripts", {}).update(
+            {
+                "Regional Prompter": {
+                    "args": [
+                        True,                  # 1  Active
+                        False,                 # 2  debug
+                        "Matrix",              # 3  Mode
+                        "Vertical",            # 4  Mode (Matrix)
+                        "Mask",                # 5  Mode (Mask)
+                        "Prompt",              # 6  Mode (Prompt)
+                        "1,1",               # 7  Ratios
+                        "",                    # 8  Base Ratios
+                        False,                 # 9  Use Base
+                        True,                 # 10 Use Common
+                        False,                 # 11 Use Neg-Common
+                        "Attention",           # 12 Calcmode
+                        False,                 # 13 Not Change AND
+                        "0",                   # 14 LoRA Textencoder
+                        "0",                   # 15 LoRA U-Net
+                        "0",                   # 16 Threshold
+                        "",                    # 17 Mask (图片路径)
+                        "0",                   # 18 LoRA stop step
+                        "0",                   # 19 LoRA Hires stop step
+                        False                  # 20 flip
+                    ]
                 }
-            )
-        if encoded_regional_img:
-            payload.setdefault("alwayson_scripts", {}).update(
-                {
-                    "Regional Prompter": {
-                        "args": [
-                            True,                  # 1  Active
-                            False,                 # 2  debug
-                            "Matrix",              # 3  Mode
-                            "Vertical",            # 4  Mode (Matrix)
-                            "Mask",                # 5  Mode (Mask)
-                            "Prompt",              # 6  Mode (Prompt)
-                            ratio,               # 7  Ratios
-                            "",                    # 8  Base Ratios
-                            False,                 # 9  Use Base
-                            True,                 # 10 Use Common
-                            False,                 # 11 Use Neg-Common
-                            "Attention",           # 12 Calcmode
-                            False,                 # 13 Not Change AND
-                            "0",                   # 14 LoRA Textencoder
-                            "0",                   # 15 LoRA U-Net
-                            "0",                   # 16 Threshold
-                            "",                    # 17 Mask (图片路径)
-                            "0",                   # 18 LoRA stop step
-                            "0",                   # 19 LoRA Hires stop step
-                            False                  # 20 flip
-                        ]
-                    }}
-            )
+            }
+        )
+
         try:
+            print(payload)
             img_bytes = txt2img(payload)
         except Exception as exc:
             logging.error("生成失败（#%d）：%s", idx + 1, exc)

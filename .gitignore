@@ -9,4 +9,10 @@
 video/*
 voice/*
 image/*
+<<<<<<< HEAD
 voice/Kokoro-82M-v1.1-zh/*
+=======
+temp/*
+image_v2/*
+
+>>>>>>> origin/fuck

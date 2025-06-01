@@ -219,12 +219,16 @@ def save_scenarios(scenarios_json):
 
 if __name__ == '__main__':
     print("BADAPPLE")
+<<<<<<< HEAD
     print("生成小说…")
     novel = generate_novel("请生成剧情跌宕起伏的温情童话短篇小说，字数要求800字左右，包含多个角色和场景，不要产生对话，尽量避免一些生活中不常见的元素，结尾不要出现题外话的总结语句")
     with open("input_gen.txt", "w", encoding="utf-8") as f:
         f.write(novel)
     print("小说生成完成，请前往 ./input_gen.txt 文件查看。")
     with open("input_gen.txt", "r", encoding="utf-8") as file:
+=======
+    with open("../input2.txt", "r", encoding="utf-8") as file:
+>>>>>>> origin/fuck
         text = file.read()
         scenarios = divide_scenarios(text)
         # print(scenarios)
