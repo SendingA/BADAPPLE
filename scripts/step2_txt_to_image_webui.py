@@ -25,6 +25,8 @@ import openpyxl  # pip install openpyxl
 import requests  # pip install requests
 from tqdm import tqdm  # pip install tqdm
 
+from judger import Judger
+
 # ---------------------------------------------------------------------------
 # 日志与全局常量
 # ---------------------------------------------------------------------------
@@ -130,7 +132,8 @@ def run_webui_program(
 
     # 控制图（如果提供）
     encoded_control_img = _encode_image_to_base64(control_image) if control_image else None
-
+    
+    juder = Judger() 
     for idx in tqdm(indices, desc="生成中", unit="张"):
         prompt_core = prompts[idx]
         positive_prompt = f"{prompt_core}"
@@ -186,7 +189,14 @@ def run_webui_program(
 
         try:
             print(payload)
-            img_bytes = txt2img(payload)
+            retries = 3
+            while retries > 0:
+                img_bytes = txt2img(payload)
+                if juder.judge(prompt_core, img_bytes):
+                    break
+                else:
+                    print("生成的图片不符合预期，重试中…")
+                retries -= 1
         except Exception as exc:
             logging.error("生成失败（#%d）：%s", idx + 1, exc)
             continue
