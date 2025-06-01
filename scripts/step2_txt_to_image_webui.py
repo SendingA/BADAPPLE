@@ -56,6 +56,11 @@ os.makedirs(os.path.dirname(PARAMS_LOG), exist_ok=True)
 # ---------------------------------------------------------------------------
 # Excel 工具函数
 # ---------------------------------------------------------------------------
+def count_character(prompts: list[str]) ->list[int]:
+    """统计每个提示词中字符的数量，返回一个整数列表。"""
+    for prompt in prompts:
+        return [prompt.count('BREAK') for prompt in prompts]
+
 
 def get_prompts(path: str) -> list[str]:
     """读取指定 Excel 文件第 C 列中的非空单元格，返回提示词列表。"""
@@ -98,6 +103,7 @@ def run_webui_program(
     """批量生成（或重绘）PNG 图片。"""
 
     prompts = get_prompts(PROMPT_XLSX)
+    break_counts = count_character(prompts)
 
     # 需要处理的索引集合
     indices = (
@@ -138,7 +144,11 @@ def run_webui_program(
 
     for idx in tqdm(indices, desc="生成中", unit="张"):
         prompt_core = prompts[idx]
-        positive_prompt = f"{prompt_core},{more_details}" if more_details else prompt_core
+        regional_counts = break_counts[idx]
+        regional_division = "1"
+        if regional_counts > 1:
+            regional_division += ",1" * (regional_counts - 1)
+        positive_prompt = f"{prompt_core}"
 
         # 构建 payload
         payload: dict[str, Any] = {
@@ -181,7 +191,7 @@ def run_webui_program(
                             "Vertical",            # 4  Mode (Matrix)
                             "Mask",                # 5  Mode (Mask)
                             "Prompt",              # 6  Mode (Prompt)
-                            "1,1,1",               # 7  Ratios
+                            regional_division,               # 7  Ratios
                             "",                    # 8  Base Ratios
                             False,                 # 9  Use Base
                             False,                 # 10 Use Common
