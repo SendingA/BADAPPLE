@@ -1,3 +1,4 @@
+import gradio as gr
 import pandas as pd
 import json
 import asyncio
@@ -148,3 +149,85 @@ def load_existing_data():
         print(f"加载现有数据时出错: {e}")
     
     return character_df, scenario_df
+
+def create_interface():
+    with gr.TabItem("📚 Step 0: 角色字典"):
+        gr.Markdown("### 分析小说文本，提取角色信息和场景划分")
+        
+        with gr.Row():
+            with gr.Column():
+                step0_novel_text = gr.Textbox(
+                    label="小说全文",
+                    placeholder="请输入完整的小说内容，脚本将自动分析场景和角色...",
+                    lines=15
+                )
+                step0_api_key = gr.Textbox(
+                    label="OpenAI API Key", 
+                    placeholder="sk-...",
+                    type="password"
+                )
+                step0_config_path = gr.Textbox(
+                    label="配置文件路径（可选）",
+                    placeholder="默认: ../config.json"
+                )
+                
+                with gr.Row():
+                    step0_btn = gr.Button("执行 Step 0", variant="primary")
+                    load_btn = gr.Button("加载现有数据", variant="secondary")
+            
+            with gr.Column():
+                step0_output = gr.Textbox(label="执行结果", lines=3)
+        
+        # 角色数据编辑区域
+        gr.Markdown("### 🎭 角色信息编辑")
+        character_dataframe = gr.Dataframe(
+            label="角色数据（可编辑）",
+            headers=["角色名Key", "角色名", "特征Key", "特征"],
+            datatype=["str", "str", "str", "str"],
+            interactive=True,
+            wrap=True
+        )
+        
+        with gr.Row():
+            save_character_btn = gr.Button("💾 保存角色数据", variant="primary")
+            character_save_result = gr.Textbox(label="保存结果", lines=1)
+        
+        # 场景数据编辑区域
+        gr.Markdown("### 🎬 场景信息编辑")
+        scenario_dataframe = gr.Dataframe(
+            label="场景数据（可编辑）",
+            headers=["场景Key", "标题", "内容"],
+            datatype=["str", "str", "str"],
+            interactive=True,
+            wrap=True
+        )
+        
+        with gr.Row():
+            save_scenario_btn = gr.Button("💾 保存场景数据", variant="primary")
+            scenario_save_result = gr.Textbox(label="保存结果", lines=1)
+        
+        # 绑定事件
+        step0_btn.click(
+            fn=run_step0,
+            inputs=[step0_novel_text, step0_config_path, step0_api_key],
+            outputs=[step0_output, character_dataframe, scenario_dataframe]
+        )
+        
+        load_btn.click(
+            fn=load_existing_data,
+            inputs=[],
+            outputs=[character_dataframe, scenario_dataframe]
+        )
+        
+        save_character_btn.click(
+            fn=save_character_data,
+            inputs=[character_dataframe],
+            outputs=[character_save_result]
+        )
+        
+        save_scenario_btn.click(
+            fn=save_scenario_data,
+            inputs=[scenario_dataframe],
+            outputs=[scenario_save_result]
+        )
+    
