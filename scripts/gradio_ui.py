@@ -21,37 +21,14 @@ try:
     import gradio_utils.step1
     import gradio_utils.step2
     import gradio_utils.step3
+    import gradio_utils.step4  # 添加这行
     
-    from step4_output_video import main as step4_main
+    # 移除直接导入 step4_main
+    # from step4_output_video import main as step4_main
 except ImportError as e:
     print(f"导入模块失败: {e}")
     print("请确保所有脚本文件存在于 scripts 目录中")
 
-
-def run_step4(fps, enlarge_background, enable_effect, effect_type):
-    """执行 Step 4: 输出视频"""
-    try:
-        # 更新配置
-        config_path = project_dir / "config.json"
-        if config_path.exists():
-            with open(config_path, 'r', encoding='utf-8') as f:
-                config = json.load(f)
-            
-            config.update({
-                "fps": fps,
-                "enlarge_background": enlarge_background,
-                "enable_effect": enable_effect,
-                "effect_type": effect_type
-            })
-            
-            with open(config_path, 'w', encoding='utf-8') as f:
-                json.dump(config, f, ensure_ascii=False, indent=2)
-        
-        result = step4_main()
-        return "✅ Step 4 完成：视频生成完成"
-        
-    except Exception as e:
-        return f"❌ Step 4 失败: {str(e)}"
 
 def run_all_steps(novel_text, api_key, server_urls_text, max_workers, min_sentence_length, width, height, steps, fps):
     """一键运行所有步骤（支持多服务器）"""
@@ -88,8 +65,8 @@ def run_all_steps(novel_text, api_key, server_urls_text, max_workers, min_senten
     if "失败" in result3:
         return "\n".join(results)
     
-    # Step 4
-    result4 = run_step4(fps, True, True, 0)
+    # Step 4 - 使用新的模块化版本
+    result4 = gradio_utils.step4.run_step4_for_all(fps, True, True, "fade")
     results.append(f"Step 4: {result4}")
     
     return "\n".join(results)
@@ -165,42 +142,8 @@ with gr.Blocks(title="小说转视频生成器", theme=gr.themes.Soft()) as demo
         # Step 3 标签页 - 现在由 step3.py 处理
         gradio_utils.step3.create_interface()
         
-        # Step 4 标签页
-        with gr.TabItem("🎬 Step 4: 视频输出"):
-            gr.Markdown("### 合成最终视频")
-            
-            with gr.Row():
-                with gr.Column():
-                    step4_fps = gr.Slider(
-                        label="视频帧率",
-                        minimum=15,
-                        maximum=60,
-                        value=30,
-                        step=1
-                    )
-                    step4_enlarge = gr.Checkbox(
-                        label="放大背景",
-                        value=True
-                    )
-                    step4_enable_effect = gr.Checkbox(
-                        label="启用特效",
-                        value=True
-                    )
-                    step4_effect_type = gr.Dropdown(
-                        label="特效类型",
-                        choices=[("Ken Burns", 0), ("淡入淡出", 1)],
-                        value=0
-                    )
-                
-                with gr.Column():
-                    step4_output = gr.Textbox(label="执行结果", lines=10)
-            
-            step4_btn = gr.Button("执行 Step 4", variant="secondary")
-            step4_btn.click(
-                fn=run_step4,
-                inputs=[step4_fps, step4_enlarge, step4_enable_effect, step4_effect_type],
-                outputs=step4_output
-            )
+        # Step 4 标签页 - 现在由 step4.py 处理
+        gradio_utils.step4.create_interface()
         
         # 帮助标签页
         with gr.TabItem("❓ 使用说明"):
