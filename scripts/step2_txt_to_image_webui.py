@@ -31,6 +31,9 @@ import openpyxl  # pip install openpyxl
 import requests  # pip install requests
 from tqdm import tqdm  # pip install tqdm
 
+import glob
+from PIL import Image
+
 # ---------------------------------------------------------------------------
 # 日志与全局常量
 # ---------------------------------------------------------------------------
@@ -226,6 +229,66 @@ def run_webui_program(
         with open(PARAMS_LOG, "a", encoding="utf-8") as fp:
             json.dump({out_name: payload}, fp, ensure_ascii=False)
             fp.write("\n")
+
+
+def get_generated_images():
+    """获取已生成的图片信息，按场景分组"""
+    # 读取场景分割信息
+    scenarios_file = os.path.join(CURRENT_DIR, "scripts", "场景分割.json")
+    if not os.path.exists(scenarios_file):
+        return []
+    
+    with open(scenarios_file, "r", encoding="utf-8") as f:
+        scenarios = json.load(f)
+    
+    # 获取所有生成的图片
+    image_files = glob.glob(os.path.join(IMAGE_DIR, "output_*.png"))
+    image_files.sort(key=lambda x: int(os.path.basename(x).split('_')[1].split('.')[0]))
+    
+    # 按场景分组
+    grouped_images = []
+    for scenario_key, scenario_data in scenarios.items():
+        if '子图索引' in scenario_data:
+            scene_images = []
+            for sub_idx in scenario_data['子图索引']:
+                img_path = os.path.join(IMAGE_DIR, f"output_{sub_idx + 1}.png")
+                if os.path.exists(img_path):
+                    scene_images.append({
+                        'path': img_path,
+                        'index': sub_idx + 1,
+                        'name': f"output_{sub_idx + 1}.png"
+                    })
+            
+            if scene_images:
+                grouped_images.append({
+                    'scenario': scenario_key,
+                    'content': scenario_data.get('内容', ''),
+                    'images': scene_images
+                })
+    
+    return grouped_images
+
+def regenerate_images(indices):
+    """重新生成指定索引的图片"""
+    if not indices:
+        return "请选择要重绘的图片"
+    
+    try:
+        # 将1基索引转换为0基索引
+        zero_based_indices = [i - 1 for i in indices]
+        
+        # 删除旧图片
+        for idx in zero_based_indices:
+            old_path = os.path.join(IMAGE_DIR, f"output_{idx + 1}.png")
+            if os.path.exists(old_path):
+                os.remove(old_path)
+        
+        # 重新生成
+        run_webui_program(prompts_to_redraw=zero_based_indices)
+        return f"成功重绘了 {len(indices)} 张图片"
+        
+    except Exception as e:
+        return f"重绘失败: {str(e)}"
 
 # ---------------------------------------------------------------------------
 # 交互式 CLI

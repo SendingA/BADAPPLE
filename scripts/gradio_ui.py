@@ -16,63 +16,15 @@ sys.path.append(str(scripts_dir))
 # 导入各个步骤的模块
 try:
     import gradio_utils.step0
-    import gradio_utils.step1  # 添加这行
+    import gradio_utils.step1
+    import gradio_utils.step2
     
-    from step2_txt_to_image_webui import main as step2_main
     from step3_txt_to_voice_kokoro import main as step3_main
     from step4_output_video import main as step4_main
 except ImportError as e:
     print(f"导入模块失败: {e}")
     print("请确保所有脚本文件存在于 scripts 目录中")
 
-def run_step2(webui_url, width, height, steps, sampler, scheduler, cfg_scale, seed, 
-              enable_hr, hr_scale, hr_upscaler, denoising_strength, 
-              more_details, negative_prompt, control_image):
-    """执行 Step 2: 文本转图像"""
-    try:
-        # 设置环境变量
-        if webui_url:
-            os.environ["WEBUI_SERVER_URL"] = webui_url
-        
-        # 更新配置
-        config_path = project_dir / "config.json"
-        if config_path.exists():
-            with open(config_path, 'r', encoding='utf-8') as f:
-                config = json.load(f)
-            
-            # 更新图像生成参数
-            config.update({
-                "width": width,
-                "height": height,
-                "steps": steps,
-                "sampler_name": sampler,
-                "scheduler": scheduler,
-                "cfg_scale": cfg_scale,
-                "seed": seed if seed != -1 else -1,
-                "enable_hr": enable_hr,
-                "hr_scale": hr_scale,
-                "hr_upscaler": hr_upscaler,
-                "denoising_strength": denoising_strength
-            })
-            
-            if more_details:
-                config["更多正面细节"] = more_details
-            if negative_prompt:
-                config["负面提示"] = negative_prompt
-            
-            with open(config_path, 'w', encoding='utf-8') as f:
-                json.dump(config, f, ensure_ascii=False, indent=2)
-        
-        # 处理控制图
-        if control_image:
-            control_path = project_dir / "control_image.png"
-            control_image.save(control_path)
-        
-        result = step2_main()
-        return "✅ Step 2 完成：图像生成完成"
-        
-    except Exception as e:
-        return f"❌ Step 2 失败: {str(e)}"
 
 def run_step3(input_file, output_dir, language, gender):
     """执行 Step 3: 文本转语音"""
@@ -135,8 +87,7 @@ def run_all_steps(novel_text, api_key, webui_url, min_sentence_length, width, he
         return "\n".join(results)
     
     # Step 2
-    result2 = run_step2(webui_url, width, height, steps, "DPM++ 3M SDE", "Karras", 7, -1,
-                       True, 2, "Latent", 0.7, "", "", None)
+    result2 = gradio_utils.step2.run_step2(webui_url, width, height, steps, "DPM++ 3M SDE", "Karras", 7, -1, True, 2, "Latent", 0.7, "", "", None)
     results.append(f"Step 2: {result2}")
     
     if "失败" in result2:
@@ -214,58 +165,7 @@ with gr.Blocks(title="小说转视频生成器", theme=gr.themes.Soft()) as demo
         gradio_utils.step1.create_interface()
 
         # Step 2 标签页
-        with gr.TabItem("🎨 Step 2: 图像生成"):
-            gr.Markdown("### 根据提示词生成场景图像")
-            
-            with gr.Row():
-                with gr.Column():
-                    step2_webui_url = gr.Textbox(
-                        label="WebUI 服务器地址",
-                        value="http://172.18.36.54:7862",
-                        placeholder="http://localhost:7860"
-                    )
-                    
-                    with gr.Row():
-                        step2_width = gr.Number(label="宽度", value=512)
-                        step2_height = gr.Number(label="高度", value=512)
-                    
-                    step2_steps = gr.Slider(label="生成步数", minimum=10, maximum=100, value=50)
-                    step2_sampler = gr.Dropdown(
-                        label="采样器",
-                        choices=["DPM++ 3M SDE", "DPM++ 2M", "Euler a", "DDIM"],
-                        value="DPM++ 3M SDE"
-                    )
-                    step2_scheduler = gr.Dropdown(
-                        label="调度器",
-                        choices=["Karras", "Exponential", "Normal"],
-                        value="Karras"
-                    )
-                    step2_cfg = gr.Slider(label="CFG Scale", minimum=1, maximum=20, value=7)
-                    step2_seed = gr.Number(label="随机种子（-1=随机）", value=-1)
-                
-                with gr.Column():
-                    step2_enable_hr = gr.Checkbox(label="启用高分辨率修复", value=True)
-                    step2_hr_scale = gr.Slider(label="放大倍数", minimum=1, maximum=4, value=2, step=0.1)
-                    step2_hr_upscaler = gr.Dropdown(
-                        label="放大算法",
-                        choices=["Latent", "ESRGAN_4x", "R-ESRGAN 4x+"],
-                        value="Latent"
-                    )
-                    step2_denoising = gr.Slider(label="去噪强度", minimum=0, maximum=1, value=0.7, step=0.05)
-                    
-                    step2_more_details = gr.Textbox(label="额外正面提示（可选）")
-                    step2_negative = gr.Textbox(label="负面提示（可选）")
-                    step2_control_image = gr.Image(label="控制图（可选）", type="pil")
-            
-            step2_output = gr.Textbox(label="执行结果", lines=5)
-            step2_btn = gr.Button("执行 Step 2", variant="primary")
-            step2_btn.click(
-                fn=run_step2,
-                inputs=[step2_webui_url, step2_width, step2_height, step2_steps, step2_sampler,
-                       step2_scheduler, step2_cfg, step2_seed, step2_enable_hr, step2_hr_scale,
-                       step2_hr_upscaler, step2_denoising, step2_more_details, step2_negative, step2_control_image],
-                outputs=step2_output
-            )
+        gradio_utils.step2.create_interface()
         
         # Step 3 标签页
         with gr.TabItem("🎵 Step 3: 语音合成"):
@@ -376,5 +276,6 @@ if __name__ == "__main__":
         server_name="0.0.0.0",
         server_port=7870,
         share=False,
-        debug=True
+        debug=True,
+        allowed_paths=[str(project_dir), str(scripts_dir)]
     )
