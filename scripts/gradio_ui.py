@@ -71,64 +71,65 @@ def run_all_steps(novel_text, api_key, server_urls_text, max_workers, min_senten
     
     return "\n".join(results)
 
+
+def create_one_click_interface():
+    with gr.TabItem("🚀 一键生成"):
+        gr.Markdown("### 快速生成模式（支持多服务器并行）")
+        
+        with gr.Row():
+            with gr.Column():
+                quick_novel_text = gr.Textbox(
+                    label="小说文本",
+                    placeholder="请输入完整的小说内容...",
+                    lines=10
+                )
+                quick_api_key = gr.Textbox(
+                    label="OpenAI API Key",
+                    placeholder="sk-...",
+                    type="password"
+                )
+                quick_server_urls = gr.Textbox(
+                    label="WebUI 服务器地址（每行一个）",
+                    value="http://localhost:7860\nhttp://localhost:7861",
+                    placeholder="http://server1:7860\nhttp://server2:7861",
+                    lines=3
+                )
+                quick_max_workers = gr.Number(
+                    label="最大并行数",
+                    value=2,
+                )
+                
+            with gr.Column():
+                quick_min_length = gr.Slider(
+                    label="最小句子长度",
+                    minimum=50,
+                    maximum=200,
+                    value=100,
+                    step=10
+                )
+                quick_width = gr.Number(label="图像宽度", value=512)
+                quick_height = gr.Number(label="图像高度", value=512)
+                quick_steps = gr.Slider(label="生成步数", minimum=10, maximum=100, value=50)
+                quick_fps = gr.Slider(label="视频帧率", minimum=15, maximum=60, value=30)
+        
+        quick_run_btn = gr.Button("🚀 开始生成", variant="primary", size="lg")
+        quick_output = gr.Textbox(label="执行结果", lines=5)
+        
+        quick_run_btn.click(
+            fn=run_all_steps,
+            inputs=[quick_novel_text, quick_api_key, quick_server_urls, quick_max_workers,
+                quick_min_length, quick_width, quick_height, quick_steps, quick_fps],
+            outputs=quick_output
+        )
+
 # 创建 Gradio 界面
-with gr.Blocks(title="小说转视频生成器", theme=gr.themes.Soft()) as demo:
-    gr.Markdown("# 🎬 小说转视频生成器")
+with gr.Blocks(title="BADAPPLE", theme=gr.themes.Soft()) as demo:
+    gr.Markdown("# 🎬 BADAPPLE")
     gr.Markdown("将小说文本转换为带配音的视频，支持角色识别、图像生成、语音合成等功能")
     
     with gr.Tabs():
         # 在一键生成界面中添加多服务器配置
-        with gr.TabItem("🚀 一键生成"):
-            gr.Markdown("### 快速生成模式（支持多服务器并行）")
-            
-            with gr.Row():
-                with gr.Column():
-                    quick_novel_text = gr.Textbox(
-                        label="小说文本",
-                        placeholder="请输入完整的小说内容...",
-                        lines=10
-                    )
-                    quick_api_key = gr.Textbox(
-                        label="OpenAI API Key",
-                        placeholder="sk-...",
-                        type="password"
-                    )
-                    quick_server_urls = gr.Textbox(
-                        label="WebUI 服务器地址（每行一个）",
-                        value="http://172.18.36.54:7862\nhttp://172.18.36.54:7863\nhttp://172.18.36.54:7864\nhttp://172.18.36.54:7865\nhttp://172.18.36.54:7866",
-                        placeholder="http://server1:7860\nhttp://server2:7861",
-                        lines=3
-                    )
-                    quick_max_workers = gr.Number(
-                        label="最大并行数",
-                        value=2,
-                        minimum=1,
-                        maximum=8
-                    )
-                    
-                with gr.Column():
-                    quick_min_length = gr.Slider(
-                        label="最小句子长度",
-                        minimum=50,
-                        maximum=200,
-                        value=100,
-                        step=10
-                    )
-                    quick_width = gr.Number(label="图像宽度", value=512)
-                    quick_height = gr.Number(label="图像高度", value=512)
-                    quick_steps = gr.Slider(label="生成步数", minimum=10, maximum=100, value=50)
-                    quick_fps = gr.Slider(label="视频帧率", minimum=15, maximum=60, value=30)
-            
-            quick_run_btn = gr.Button("🚀 开始生成", variant="primary", size="lg")
-            quick_output = gr.Textbox(label="执行结果", lines=5)
-            
-            quick_run_btn.click(
-                fn=run_all_steps,
-                inputs=[quick_novel_text, quick_api_key, quick_server_urls, quick_max_workers,
-                    quick_min_length, quick_width, quick_height, quick_steps, quick_fps],
-                outputs=quick_output
-            )
-
+        create_one_click_interface()
         
         # Step 0 标签页
         gradio_utils.step0.create_interface()

@@ -87,7 +87,7 @@ def count_character(prompts: list[str]) ->list[int]:
 
 
 def get_prompts(path: str) -> list[str]:
-    """读取指定 Excel 文件第 C 列中的非空单元格，返回提示词列表。"""
+    """读取指定 Excel 文件第 D 列中的非空单元格，返回提示词列表。"""
 
     wb = openpyxl.load_workbook(path)
     sheet = wb.active
@@ -300,13 +300,18 @@ def run_webui_program(
         params.update(extra_params)
 
     # 读取用户自定义配置（若存在）
-    cfg_path = os.path.join(CURRENT_DIR, "config.json")
-    user_cfg: dict[str, str] = {}
-    if os.path.exists(cfg_path):
-        with open(cfg_path, "r", encoding="utf-8") as f:
-            user_cfg = json.load(f)
-    more_details: str = user_cfg.get("more_details", "")
-    negative_prompt: str = user_cfg.get("negative_prompt", "")
+    # cfg_path = os.path.join(CURRENT_DIR, "config.json")
+    # user_cfg: dict[str, str] = {}
+    # if os.path.exists(cfg_path):
+    #     with open(cfg_path, "r", encoding="utf-8") as f:
+    #         user_cfg = json.load(f)
+    # more_details: str = user_cfg.get("more_details", "")
+    # negative_prompt: str = user_cfg.get("negative_prompt", "")
+    negative_prompt = """\
+badhandv4,ng_deepnegative_v1_64t,worst quality,low quality,normal quality,lowers,monochrome,grayscales,\
+skin spots,acnes,skin blemishes,age spot,6 more fingers on one hand,deformity,bad legs,error legs,bad feet,\
+malformed limbs,extra limbs,ugly,poorly drawn hands,poorly drawn feet,poorly drawn face,text,mutilated,extra fingers,\
+mutated hands,mutation,bad anatomy,cloned face,disfigured,fused fingers"""
 
     # 控制图（如果提供）
     encoded_control_img = _encode_image_to_base64(control_image) if control_image else None
