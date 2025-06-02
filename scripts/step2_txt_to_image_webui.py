@@ -87,7 +87,7 @@ def count_character(prompts: list[str]) ->list[int]:
 
 
 def get_prompts(path: str) -> list[str]:
-    """读取指定 Excel 文件第 C 列中的非空单元格，返回提示词列表。"""
+    """读取指定 Excel 文件第 D 列中的非空单元格，返回提示词列表。"""
 
     wb = openpyxl.load_workbook(path)
     sheet = wb.active
