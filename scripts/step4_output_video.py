@@ -3,7 +3,7 @@ import gc
 import random
 from concurrent.futures import ThreadPoolExecutor
 from PIL import Image, ImageFilter
-from moviepy import (
+from moviepy.editor import (
     ImageSequenceClip,
     AudioFileClip,
     CompositeVideoClip,
