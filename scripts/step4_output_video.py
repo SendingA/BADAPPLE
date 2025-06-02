@@ -2,20 +2,24 @@ import os
 import gc
 import random
 from concurrent.futures import ThreadPoolExecutor
-from PIL import Image, ImageFilter
+from PIL import Image, ImageFilter, ImageDraw, ImageFont
 from moviepy.editor import (
     ImageSequenceClip,
     AudioFileClip,
     CompositeVideoClip,
     concatenate_videoclips,
     VideoFileClip,
-    vfx
+    vfx,
+    TextClip  # 添加 TextClip 导入
 )
 import json
 from datetime import datetime
 import chardet
+import concurrent.futures
 from tqdm import tqdm
 import numpy as np
+import textwrap
+import re
 
 def get_config():
     config_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'config.json')
@@ -45,160 +49,484 @@ def transform_image(img, t, x_speed, y_speed, move_on_x, move_positive):
     
     return cropped_img.resize(original_size)
 
-def main():
-    """主函数：生成视频"""
+
+def create_subtitle_image(text, width, height, fontsize=36):
+    """创建简洁的字幕图像"""
+    img = Image.new('RGBA', (width, height), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+    
     try:
-        print("BADAPPLE - 开始生成视频")
+        # 尝试使用支持中文的字体
+        font = ImageFont.truetype("C:/Windows/Fonts/simhei.ttf", fontsize)
+    except:
+        try:
+            font = ImageFont.truetype("arial.ttf", fontsize)
+        except:
+            font = ImageFont.load_default()
+    
+    if not text.strip():
+        return np.array(img)
+    
+    # 获取文本尺寸
+    bbox = draw.textbbox((0, 0), text, font=font)
+    text_width = bbox[2] - bbox[0]
+    text_height = bbox[3] - bbox[1]
+    
+    # 确保字幕在屏幕范围内
+    margin = 20
+    if text_width > width - 2 * margin:
+        # 如果文本太宽，缩小字体
+        fontsize = int(fontsize * (width - 2 * margin) / text_width)
+        try:
+            font = ImageFont.truetype("C:/Windows/Fonts/simhei.ttf", fontsize)
+        except:
+            font = ImageFont.load_default()
+        bbox = draw.textbbox((0, 0), text, font=font)
+        text_width = bbox[2] - bbox[0]
+        text_height = bbox[3] - bbox[1]
+    
+    # 计算居中位置（靠近底部）
+    x = (width - text_width) // 2
+    y = height - text_height - 80  # 距离底部80像素
+    
+    # 确保不会超出边界
+    x = max(margin, min(x, width - text_width - margin))
+    y = max(margin, min(y, height - text_height - margin))
+    
+    # 绘制半透明背景
+    bg_padding = 10
+    bg_left = x - bg_padding
+    bg_top = y - bg_padding
+    bg_right = x + text_width + bg_padding
+    bg_bottom = y + text_height + bg_padding
+    draw.rectangle([bg_left, bg_top, bg_right, bg_bottom], fill=(0, 0, 0, 128))
+    
+    # 绘制文本描边
+    for dx in [-1, 0, 1]:
+        for dy in [-1, 0, 1]:
+            if dx != 0 or dy != 0:
+                draw.text((x + dx, y + dy), text, font=font, fill=(0, 0, 0, 255))
+    
+    # 绘制主文本
+    draw.text((x, y), text, font=font, fill=(255, 255, 255, 255))
+    
+    return np.array(img)
 
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        parent_dir = os.path.dirname(current_dir)
+def load_audio_timing_info(voice_dir):
+    """加载音频时长信息"""
+    timing_file = os.path.join(voice_dir, "audio_timing.json")
+    sentence_mapping_file = os.path.join(voice_dir, "sentence_mapping.json")
+    
+    timing_info = {}
+    sentence_mapping = {}
+    
+    if os.path.exists(timing_file):
+        with open(timing_file, 'r', encoding='utf-8') as f:
+            timing_info = json.load(f)
+    
+    if os.path.exists(sentence_mapping_file):
+        with open(sentence_mapping_file, 'r', encoding='utf-8') as f:
+            sentence_mapping_list = json.load(f)
+            # 转换为以场景索引为键的字典
+            for item in sentence_mapping_list:
+                sentence_mapping[item["scenario_index"]] = item
+    
+    return timing_info, sentence_mapping
 
-        config = get_config()
+def process_subtitle_ending(subtitle):
+    """处理字幕末尾，移除结束标点符号"""
+    if not subtitle:
+        return subtitle
+    
+    # 定义结束标点符号
+    ending_punctuation = ['。', '！', '？', '.', '!', '?', '；', ';', '，', ',']
+    
+    # 如果最后一个字符是结束标点符号，则移除
+    while subtitle and subtitle[-1] in ending_punctuation:
+        subtitle = subtitle[:-1]
+    
+    return subtitle.strip()
 
-        image_dir = os.path.join(parent_dir, 'image')
-        voice_dir = os.path.join(parent_dir, 'voice')
-        video_dir = os.path.join(parent_dir, 'video')
-        temp_dir = os.path.join(parent_dir, 'temp')
-        scripts_dir = os.path.join(parent_dir, 'scripts')
-
-        # 确保输出目录存在
-        os.makedirs(video_dir, exist_ok=True)
-        os.makedirs(temp_dir, exist_ok=True)
-
-        # 检查场景分割文件是否存在
-        scenarios_file = os.path.join(scripts_dir, '场景分割.json')
-        if not os.path.exists(scenarios_file):
-            raise FileNotFoundError("场景分割文件不存在，请先完成 Step 1")
-
-        with open(scenarios_file, 'r', encoding='utf-8') as f:
-            scenario_info = list(json.load(f).values())
-
-        total_files = len(scenario_info)
-        if total_files == 0:
-            raise ValueError("场景分割文件为空")
-
-        fps = config.get('fps', 30)
-        enlarge_background = config.get('enlarge_background', True)
-        enable_effect = config.get('enable_effect', True)
-        effect_type_config = config.get('effect_type', 'fade')
-
-        extensions = ['.png', '.jpg', '.jpeg']
+def create_subtitles_from_audio_timing(scenario_index, timing_info, sentence_mapping, max_chars_per_subtitle=20):
+    """根据音频时长信息创建字幕，平均分配显示时间"""
+    audio_key = f"output_{scenario_index}"
+    
+    if audio_key not in timing_info or scenario_index not in sentence_mapping:
+        return []
+    
+    sentence_durations = timing_info[audio_key].get("sentence_durations", [])
+    processed_sentences = sentence_mapping[scenario_index].get("processed_sentences", [])
+    total_duration = timing_info[audio_key].get("total_duration", 0)
+    
+    if not sentence_durations or not processed_sentences or total_duration <= 0:
+        return []
+    
+    # 将所有句子合并成一个完整文本
+    full_text = ''.join(processed_sentences)
+    
+    # 智能分割文本，考虑双引号的情况
+    def smart_split_text(text):
+        """智能分割文本，保护双引号内的内容"""
+        parts = []
+        current_part = ""
+        in_quotes = False
+        quote_chars = ['“', '”']  # 各种引号类型
         
-        print(f"总共需要处理 {total_files} 个场景")
+        i = 0
+        while i < len(text):
+            char = text[i]
+            
+            # 检查是否遇到引号
+            if char in quote_chars and not in_quotes:
+                in_quotes = True
+                current_part += char
+            elif char in quote_chars and in_quotes:
+                in_quotes = False
+                current_part += char
+            # 如果在引号内，直接添加字符
+            elif in_quotes:
+                current_part += char
+            # 如果不在引号内，检查分割标点
+            elif char in ['，', ',', '。', '！', '？', '；', ';']:
+                current_part += char
+                if current_part.strip():
+                    parts.append(current_part.strip())
+                current_part = ""
+            else:
+                current_part += char
+            
+            i += 1
+        
+        # 添加最后一部分
+        if current_part.strip():
+            parts.append(current_part.strip())
+        
+        return parts
+    
+    text_parts = smart_split_text(full_text)
+    
+    # 智能合并：区分结束标点符号和中间标点符号
+    merged_subtitles = []
+    current_subtitle = ""
+    
+    # 定义结束标点符号和中间标点符号
+    ending_punctuation = ['。', '！', '？', '.', '!', '?']
+    middle_punctuation = ['，', ',', '；', ';']
+    
+    for part in text_parts:
+        # 检查当前字幕是否以结束标点符号结尾
+        current_ends_with_ending = current_subtitle and current_subtitle[-1] in ending_punctuation
+        
+        # 如果当前字幕以结束标点符号结尾，不能合并
+        if current_ends_with_ending:
+            # 保存当前字幕
+            processed_subtitle = process_subtitle_ending(current_subtitle)
+            if processed_subtitle:  # 确保字幕不为空
+                merged_subtitles.append(processed_subtitle)
+            current_subtitle = part
+        # 如果当前字幕加上新部分不超过长度限制，且当前字幕不以结束标点符号结尾
+        elif len(current_subtitle + part) <= max_chars_per_subtitle:
+            current_subtitle += part
+        else:
+            # 保存当前字幕（如果不为空）
+            if current_subtitle:
+                processed_subtitle = process_subtitle_ending(current_subtitle)
+                if processed_subtitle:  # 确保字幕不为空
+                    merged_subtitles.append(processed_subtitle)
+                current_subtitle = ""
+            
+            # 如果单个部分太长，需要强制拆分
+            if len(part) > max_chars_per_subtitle:
+                for i in range(0, len(part), max_chars_per_subtitle):
+                    chunk = part[i:i + max_chars_per_subtitle]
+                    processed_chunk = process_subtitle_ending(chunk)
+                    if processed_chunk:  # 确保字幕不为空
+                        merged_subtitles.append(processed_chunk)
+            else:
+                current_subtitle = part
+    
+    # 添加最后的字幕
+    if current_subtitle:
+        processed_subtitle = process_subtitle_ending(current_subtitle)
+        if processed_subtitle:  # 确保字幕不为空
+            merged_subtitles.append(processed_subtitle)
+    
+    # 如果没有生成任何字幕，返回空
+    if not merged_subtitles:
+        return []
+    
+    # 平均分配时间：总时长除以字幕数量
+    subtitle_duration = total_duration / len(merged_subtitles)
+    
+    # 创建字幕列表，每个字幕显示时间相等
+    subtitles = []
+    for i, subtitle_text in enumerate(merged_subtitles):
+        start_time = i * subtitle_duration
+        end_time = (i + 1) * subtitle_duration
+        # 确保最后一个字幕不超过总时长
+        if i == len(merged_subtitles) - 1:
+            end_time = total_duration
+        subtitles.append((subtitle_text, start_time, end_time))
+    
+    return subtitles
 
-        for i in tqdm(range(total_files), ncols=None, desc="正在生成视频"):
-            im_indices = scenario_info[i]['子图索引']
-            audio_filename = os.path.join(voice_dir, f'output_{i}')
-            temp_filename = os.path.join(temp_dir, f'output_{i}.mp4')
+def split_text_by_time(text, total_duration, subtitle_duration=2.5, max_chars_per_subtitle=20):
+    """根据时间切割文本为短字幕，平均分配时间"""
+    if not text:
+        return []
+    
+    # 移除多余的空格和换行
+    text = ' '.join(text.split())
+    
+    # 如果文本很短，只用一个字幕
+    if len(text) <= max_chars_per_subtitle:
+        processed_text = process_subtitle_ending(text)
+        return [(processed_text, 0, total_duration)]
+    
+    # 智能分割文本，考虑双引号的情况
+    def smart_split_text(text):
+        """智能分割文本，保护双引号内的内容"""
+        parts = []
+        current_part = ""
+        in_quotes = False
+        quote_chars = ['"', '"', '"', "'", "'"]  # 各种引号类型
+        
+        i = 0
+        while i < len(text):
+            char = text[i]
+            
+            # 检查是否遇到引号
+            if char in quote_chars and not in_quotes:
+                in_quotes = True
+                current_part += char
+            elif char in quote_chars and in_quotes:
+                in_quotes = False
+                current_part += char
+            # 如果在引号内，直接添加字符
+            elif in_quotes:
+                current_part += char
+            # 如果不在引号内，检查分割标点
+            elif char in ['，', ',', '。', '！', '？', '；', ';']:
+                current_part += char
+                if current_part.strip():
+                    parts.append(current_part.strip())
+                current_part = ""
+            else:
+                current_part += char
+            
+            i += 1
+        
+        # 添加最后一部分
+        if current_part.strip():
+            parts.append(current_part.strip())
+        
+        return parts
+    
+    text_parts = smart_split_text(text)
+    
+    # 如果没有分割出部分，回退到原始文本
+    if not text_parts:
+        text_parts = [text]
+    
+    # 智能合并：区分结束标点符号和中间标点符号
+    merged_subtitles = []
+    current_subtitle = ""
+    
+    # 定义结束标点符号和中间标点符号
+    ending_punctuation = ['。', '！', '？', '.', '!', '?']
+    middle_punctuation = ['，', ',', '；', ';']
+    
+    for part in text_parts:
+        # 检查当前字幕是否以结束标点符号结尾
+        current_ends_with_ending = current_subtitle and current_subtitle[-1] in ending_punctuation
+        
+        # 如果当前字幕以结束标点符号结尾，不能合并
+        if current_ends_with_ending:
+            # 保存当前字幕
+            processed_subtitle = process_subtitle_ending(current_subtitle)
+            if processed_subtitle:  # 确保字幕不为空
+                merged_subtitles.append(processed_subtitle)
+            current_subtitle = part
+        # 如果当前字幕加上新部分不超过长度限制，且当前字幕不以结束标点符号结尾
+        elif len(current_subtitle + part) <= max_chars_per_subtitle:
+            current_subtitle += part
+        else:
+            # 保存当前字幕（如果不为空）
+            if current_subtitle:
+                processed_subtitle = process_subtitle_ending(current_subtitle)
+                if processed_subtitle:  # 确保字幕不为空
+                    merged_subtitles.append(processed_subtitle)
+                current_subtitle = ""
+            
+            # 如果单个部分太长，需要强制拆分
+            if len(part) > max_chars_per_subtitle:
+                for i in range(0, len(part), max_chars_per_subtitle):
+                    chunk = part[i:i + max_chars_per_subtitle]
+                    processed_chunk = process_subtitle_ending(chunk)
+                    if processed_chunk:  # 确保字幕不为空
+                        merged_subtitles.append(processed_chunk)
+            else:
+                current_subtitle = part
+    
+    # 添加最后的字幕
+    if current_subtitle:
+        processed_subtitle = process_subtitle_ending(current_subtitle)
+        if processed_subtitle:  # 确保字幕不为空
+            merged_subtitles.append(processed_subtitle)
+    
+    # 如果没有生成任何字幕，至少添加一个
+    if not merged_subtitles:
+        processed_text = process_subtitle_ending(text[:max_chars_per_subtitle])
+        merged_subtitles = [processed_text]
+    
+    # 平均分配时间：总时长除以字幕数量
+    subtitle_duration_avg = total_duration / len(merged_subtitles)
+    
+    # 创建字幕列表，每个字幕显示时间相等
+    subtitles = []
+    for i, subtitle_text in enumerate(merged_subtitles):
+        start_time = i * subtitle_duration_avg
+        end_time = (i + 1) * subtitle_duration_avg
+        # 确保最后一个字幕不超过总时长
+        if i == len(merged_subtitles) - 1:
+            end_time = total_duration
+        subtitles.append((subtitle_text, start_time, end_time))
+    
+    return subtitles
 
-            # 检查音频文件是否存在
-            if not os.path.exists(audio_filename + '.wav'):
-                print(f"警告: 音频文件 {audio_filename}.wav 不存在，跳过场景 {i}")
-                continue
+def main():
 
-            audio = AudioFileClip(audio_filename + '.wav')
+    print("BADAPPLE")
 
-            segment_duration = audio.duration / len(im_indices)
-            segment_frames = int(segment_duration * fps)
-            all_segments = []
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    parent_dir = os.path.dirname(current_dir)
 
-            for idx in im_indices:
-                img_path = None
-                for ext in extensions:
-                    potential_path = os.path.join(image_dir, f'output_{idx+1}{ext}')
-                    if os.path.exists(potential_path):
-                        img_path = potential_path
+    config = get_config()
+
+    image_dir = os.path.join(parent_dir, 'image')
+    voice_dir = os.path.join(parent_dir, 'voice')
+    video_dir = os.path.join(parent_dir, 'video')
+    temp_dir = os.path.join(parent_dir, 'temp')
+    scripts_dir = os.path.join(parent_dir, 'scripts')
+
+    with open(os.path.join(scripts_dir, '场景分割.json'), 'r', encoding='utf-8') as f:
+        scenario_info = list(json.load(f).values())
+    os.makedirs(temp_dir, exist_ok=True)
+
+    total_files = len(scenario_info)
+    fps = config['fps']
+    enlarge_background = config['enlarge_background']
+    enable_effect = config['enable_effect']
+    effect_type = config['effect_type']
+
+    extensions = ['.png', '.jpg', '.jpeg']
+    # 加载音频时长信息
+    timing_info, sentence_mapping = load_audio_timing_info(voice_dir)
+    # 在主循环中修改字幕长度限制
+    for i in tqdm(range(total_files), ncols=None, desc="正在生成视频"):
+        im_indices = scenario_info[i]['子图索引']
+        audio_filename = os.path.join(voice_dir, f'output_{i}')
+        temp_filename = os.path.join(temp_dir, f'output_{i}.mp4')
+
+        audio = AudioFileClip(audio_filename + '.wav')
+
+        # 使用音频时长信息创建精确对齐的字幕（增加字幕长度）
+        subtitle_list = create_subtitles_from_audio_timing(i, timing_info, sentence_mapping, max_chars_per_subtitle=23)
+
+        # 如果没有获取到时长信息，回退到原方法（同样增加字幕长度）
+        if not subtitle_list:
+            subtitle_text = scenario_info[i].get('内容', '')
+            subtitle_list = split_text_by_time(subtitle_text, audio.duration, subtitle_duration=2.5, max_chars_per_subtitle=23)
+
+        segment_duration = audio.duration / len(im_indices)
+        segment_frames = int(segment_duration * fps)
+        all_segments = []
+
+        for idx_num, idx in enumerate(im_indices):
+            for ext in extensions:
+                try:
+                    img_path = os.path.join(image_dir, f'output_{idx+1}{ext}')
+                    if os.path.exists(img_path):
                         break
-
-                if img_path is None:
-                    print(f"警告: 图像 output_{idx+1} 未找到，跳过。")
+                except FileNotFoundError:
+                    print(f"图像 output_{idx} 未找到，跳过。")
                     continue
 
-                im = Image.open(img_path)
-                
-                # 随机选择运动方向
-                movement_type = random.choice([0, 1])
+            im = Image.open(img_path)
+            effect_type = random.choice([0, 1])
 
-                if movement_type == 0:
-                    x_speed = (im.width - im.width * 0.8) / segment_duration
-                    y_speed = 0
-                    move_on_x = True
-                elif movement_type == 1:
-                    x_speed = 0
-                    y_speed = (im.height - im.height * 0.8) / segment_duration
-                    move_on_x = False
-                
-                move_positive = random.choice([True, False])
-                
-                frames_foreground = [
-                    np.array(transform_image(im, t / fps, x_speed, y_speed, move_on_x, move_positive)) 
-                    for t in range(segment_frames)
-                ]
-                img_foreground = ImageSequenceClip(frames_foreground, fps=fps)
+            if effect_type == 0:
+                x_speed = (im.width - im.width * 0.8) / segment_duration
+                y_speed = 0
+                move_on_x = True
+            elif effect_type == 1:
+                x_speed = 0
+                y_speed = (im.height - im.height * 0.8) / segment_duration
+                move_on_x = False
+            move_positive = random.choice([True, False])
+            frames_foreground = [
+                np.array(transform_image(im, t / fps, x_speed, y_speed, move_on_x, move_positive)) 
+                for t in range(segment_frames)
+            ]
+            img_foreground = ImageSequenceClip(frames_foreground, fps=fps)
 
-                img_blur = im.filter(ImageFilter.GaussianBlur(radius=30))
-                if enlarge_background:
-                    img_blur = img_blur.resize(
-                        (int(im.width * 1.1), int(im.height * 1.1)), Image.Resampling.LANCZOS)
-                frames_background = [np.array(img_blur)] * segment_frames
-                img_background = ImageSequenceClip(frames_background, fps=fps)
+            img_blur = im.filter(ImageFilter.GaussianBlur(radius=30))
+            if enlarge_background:
+                 img_blur = img_blur.resize(
+                    (int(im.width * 1.1), int(im.height * 1.1)), Image.Resampling.LANCZOS)
+            frames_background = [np.array(img_blur)] * segment_frames
+            img_background = ImageSequenceClip(frames_background, fps=fps)
 
-                segment_clip = CompositeVideoClip(
-                    [img_background.set_position("center"), img_foreground.set_position("center")], 
-                    size=img_blur.size
-                )
+            segment_clip = CompositeVideoClip(
+                [img_background.set_position("center"), img_foreground.set_position("center")], 
+                size=img_blur.size
+            )
 
-                # 应用特效（如果启用）
-                if enable_effect:
-                    segment_clip = {
-                        'fade': segment_clip.fadein(1).fadeout(1),
-                        'slide': segment_clip.crossfadein(1).crossfadeout(1),
-                        'rotate': segment_clip.rotate(lambda t: 360*t/10),
-                        'scroll': segment_clip.fx(vfx.scroll, y_speed=50),
-                        'flip_horizontal': segment_clip.fx(vfx.mirror_x),
-                        'flip_vertical': segment_clip.fx(vfx.mirror_y)
-                    }.get(effect_type_config, segment_clip)
-                
-                all_segments.append(segment_clip)
+            # 为当前时间段添加相应的字幕
+            segment_start_time = idx_num * segment_duration
+            segment_end_time = (idx_num + 1) * segment_duration
 
-            if all_segments:  # 只有当有有效片段时才生成视频
-                final_clip = concatenate_videoclips(all_segments, method="compose").set_audio(audio)
-                final_clip.write_videofile(temp_filename, verbose=False, logger=None)
-                final_clip.close()  # 释放资源
-                audio.close()
-            
-            gc.collect()
+            # 收集在当前时间段内的字幕
+            current_subtitles = []
+            for subtitle_text, start_time, end_time in subtitle_list:
+                # 检查字幕时间是否与当前段重叠
+                if not (end_time <= segment_start_time or start_time >= segment_end_time):
+                    # 计算在当前段内的显示时间
+                    display_start = max(0, start_time - segment_start_time)
+                    display_end = min(segment_duration, end_time - segment_start_time)
+                    current_subtitles.append((subtitle_text, display_start, display_end))
 
-        # 合并所有临时视频文件
-        print("正在合并所有视频片段...")
-        temp_filenames = []
-        for i in range(total_files):
-            temp_file = os.path.join(temp_dir, f'output_{i}.mp4')
-            if os.path.exists(temp_file):
-                temp_filenames.append(temp_file)
+            # 创建字幕图层
+            if current_subtitles:
+                subtitle_clips = []
+                for subtitle_text, display_start, display_end in current_subtitles:
+                    subtitle_img = create_subtitle_image(subtitle_text, img_blur.size[0], img_blur.size[1])
 
-        if not temp_filenames:
-            raise RuntimeError("没有生成任何视频片段")
+                    # 计算需要显示的帧数
+                    start_frame = int(display_start * fps)
+                    end_frame = int(display_end * fps)
+                    subtitle_frames = [subtitle_img] * (end_frame - start_frame)
 
-        temp_filenames.sort(key=lambda x: int(x.split('_')[-1].split('.')[0]))
-        
-        video_clips = [VideoFileClip(filename) for filename in temp_filenames]
-        final_video = concatenate_videoclips(video_clips, method="compose")
-        
-        output_filename = os.path.join(video_dir, f'output_{datetime.now().strftime("%Y%m%d%H%M%S")}.mp4')
-        final_video.write_videofile(output_filename, verbose=False, logger=None)
-        
-        # 清理资源
-        for clip in video_clips:
-            clip.close()
-        final_video.close()
-        
-        print(f"✅ 视频生成完成: {output_filename}")
-        return output_filename
+                    if subtitle_frames:
+                        subtitle_clip = ImageSequenceClip(subtitle_frames, fps=fps)
+                        subtitle_clip = subtitle_clip.set_start(display_start)
+                        subtitle_clips.append(subtitle_clip)
 
-    except Exception as e:
-        print(f"❌ 视频生成失败: {str(e)}")
-        raise e
+                # 如果有字幕，添加到视频中
+                if subtitle_clips:
+                    segment_clip = CompositeVideoClip([segment_clip] + subtitle_clips)
 
+            all_segments.append(segment_clip)
+
+        final_clip = concatenate_videoclips(all_segments, method="compose").set_audio(audio)
+        final_clip.write_videofile(temp_filename)
+        gc.collect()
+
+    temp_filenames = [os.path.join(temp_dir, f'output_{i}.mp4') for i in range(total_files)]
+    temp_filenames.sort(key=lambda x: int(x.split('_')[-1].split('.')[0]))
+    final_video = concatenate_videoclips([VideoFileClip(filename) for filename in temp_filenames], method="compose")
+    final_video.write_videofile(os.path.join(video_dir, f'output_{datetime.now().strftime("%Y%m%d%H%M%S")}.mp4'))
+    
 if __name__ == "__main__":
     main()
+    print("🎉 视频生成完成！")
