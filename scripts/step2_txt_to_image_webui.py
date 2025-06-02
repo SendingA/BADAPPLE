@@ -29,6 +29,8 @@ from typing import Any, Optional
 import concurrent.futures
 import threading
 from queue import Queue
+import time
+from functools import wraps
 
 import openpyxl  # pip install openpyxl
 import requests  # pip install requests
@@ -257,7 +259,7 @@ def run_webui_program(
     control_image: str | None = None,
     max_workers: int = None,
 ) -> None:
-    """批量生成（或重绘）PNG 图片，支持多服务器并行。"""
+    """批量生成（或重绘）PNG 图片，支持多服务器并行和失败重试。"""
 
     # 获取可用服务器
     available_servers = get_available_servers()
@@ -331,13 +333,13 @@ def run_webui_program(
         }
         tasks.append(task_info)
 
-    # 并行执行任务
+    # 并行执行任务（使用重试版本）
     success_count = 0
     failed_indices = []
     
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-        # 提交所有任务
-        future_to_task = {executor.submit(generate_single_image, task): task for task in tasks}
+        # 提交所有任务（使用重试版本）
+        future_to_task = {executor.submit(generate_single_image_with_retry, task): task for task in tasks}
         
         # 使用 tqdm 显示进度
         with tqdm(total=len(tasks), desc="并行生成中", unit="张") as pbar:
@@ -349,16 +351,103 @@ def run_webui_program(
                         success_count += 1
                     else:
                         failed_indices.append(idx + 1)
+                        logging.error(f"图片 #{idx + 1} 最终失败: {error_msg}")
                 except Exception as exc:
                     failed_indices.append(task["idx"] + 1)
                     logging.error(f"任务执行异常: {exc}")
                 
                 pbar.update(1)
     
-    # 输出统计信息
-    logging.info(f"生成完成！成功: {success_count}/{len(tasks)}")
+    # 如果有失败的图片，询问是否重试
     if failed_indices:
         logging.warning(f"失败的图片索引: {failed_indices}")
+        retry_choice = input(f"有 {len(failed_indices)} 张图片生成失败，是否重试？(y/N): ").strip().lower()
+        if retry_choice == 'y':
+            logging.info("开始重试失败的图片...")
+            # 将1基索引转换为0基索引进行重试
+            retry_indices = [i - 1 for i in failed_indices]
+            run_webui_program(prompts_to_redraw=retry_indices, extra_params=extra_params, control_image=control_image, max_workers=max_workers)
+    
+    # 输出统计信息
+    logging.info(f"生成完成！成功: {success_count}/{len(tasks)}")
+
+# 在全局常量区域添加重试配置
+MAX_RETRIES = 3
+RETRY_DELAY = 5  # 秒
+
+def retry_on_failure(max_retries=MAX_RETRIES, delay=RETRY_DELAY):
+    """装饰器：为函数添加重试机制"""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            last_exception = None
+            for attempt in range(max_retries + 1):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    last_exception = e
+                    if attempt < max_retries:
+                        logging.warning(f"第 {attempt + 1} 次尝试失败: {e}, {delay}秒后重试...")
+                        time.sleep(delay)
+                    else:
+                        logging.error(f"重试 {max_retries} 次后仍然失败: {e}")
+                        raise last_exception
+            return None
+        return wrapper
+    return decorator
+
+@retry_on_failure(max_retries=2, delay=3)
+def txt2img(payload: dict[str, Any], server_url: str) -> bytes:
+    """调用指定WebUI服务器的txt2img接口并返回第一张图片的二进制数据。"""
+    txt2img_url = f"{server_url}/sdapi/v1/txt2img"
+    resp = requests.post(txt2img_url, json=payload, timeout=600)
+    resp.raise_for_status()
+    data = resp.json()
+    if not data.get("images"):
+        raise RuntimeError(f"WebUI服务器 {server_url} 未返回任何图像！")
+    return base64.b64decode(data["images"][0])
+
+def get_available_servers() -> list[str]:
+    """获取可用的WebUI服务器列表"""
+    available = []
+    for server in SERVER_URLS:
+        if get_server_status(server):
+            available.append(server)
+            logging.info(f"服务器可用: {server}")
+        else:
+            logging.warning(f"服务器不可用: {server}")
+    return available
+
+def generate_single_image_with_retry(task_info: dict) -> tuple[int, bool, str]:
+    """生成单张图片的任务函数，带重试机制"""
+    idx = task_info["idx"]
+    max_retries = 3
+    
+    for attempt in range(max_retries):
+        try:
+            # 每次重试时重新获取可用服务器
+            available_servers = get_available_servers()
+            if not available_servers:
+                raise RuntimeError("没有可用的服务器")
+            
+            # 轮换服务器
+            server_url = available_servers[attempt % len(available_servers)]
+            task_info["server_url"] = server_url
+            
+            return generate_single_image(task_info)
+            
+        except Exception as exc:
+            error_msg = f"第 {attempt + 1} 次尝试失败（图片 #{idx + 1}）: {exc}"
+            logging.warning(error_msg)
+            
+            if attempt < max_retries - 1:
+                time.sleep(2)  # 重试前等待
+            else:
+                final_error = f"重试 {max_retries} 次后仍失败（图片 #{idx + 1}）: {exc}"
+                logging.error(final_error)
+                return idx, False, str(exc)
+    
+    return idx, False, "未知错误"
 
 def get_generated_images():
     """获取已生成的图片信息，按场景分组"""
