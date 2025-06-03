@@ -5,64 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f03d818a-e448-4dd8-bdd6-87cbd7444de2" name="Changes" comment="replace characters">
-      <change afterPath="$PROJECT_DIR$/environment.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_1.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_1.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_10.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_10.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_11.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_11.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_12.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_12.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_13.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_13.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_14.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_14.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_15.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_15.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_16.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_16.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_17.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_17.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_18.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_18.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_19.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_19.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_2.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_2.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_20.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_20.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_21.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_21.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_22.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_22.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_23.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_23.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_24.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_24.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_25.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_25.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_26.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_26.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_27.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_27.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_28.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_28.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_29.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_29.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_3.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_3.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_30.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_30.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_31.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_31.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_32.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_32.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_33.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_33.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_34.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_34.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_4.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_4.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_5.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_5.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_6.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_6.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_7.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_7.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_8.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_8.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/image/output_9.png" beforeDir="false" afterPath="$PROJECT_DIR$/image/output_9.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/step0_create_character_dictionary.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step0_create_character_dictionary.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/step1_extract_keywords.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step1_extract_keywords.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/step2_txt_to_image_webui.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/step2_txt_to_image_webui.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/场景分割.json" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/场景分割.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/角色信息.json" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/角色信息.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/txt/output.csv" beforeDir="false" afterPath="$PROJECT_DIR$/txt/output.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/txt/output.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/txt/output.xlsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/txt/output2.csv" beforeDir="false" afterPath="$PROJECT_DIR$/txt/output2.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/txt/output2.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/txt/output2.xlsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/txt/txt.csv" beforeDir="false" afterPath="$PROJECT_DIR$/txt/txt.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/voice/output_0.wav" beforeDir="false" afterPath="$PROJECT_DIR$/voice/output_0.wav" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/voice/output_1.wav" beforeDir="false" afterPath="$PROJECT_DIR$/voice/output_1.wav" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/voice/output_10.wav" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/voice/output_2.wav" beforeDir="false" afterPath="$PROJECT_DIR$/voice/output_2.wav" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/voice/output_3.wav" beforeDir="false" afterPath="$PROJECT_DIR$/voice/output_3.wav" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/voice/output_4.wav" beforeDir="false" afterPath="$PROJECT_DIR$/voice/output_4.wav" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/voice/output_5.wav" beforeDir="false" afterPath="$PROJECT_DIR$/voice/output_5.wav" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/voice/output_6.wav" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/voice/output_7.wav" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/voice/output_8.wav" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/voice/output_9.wav" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -166,6 +109,7 @@
       <workItem from="1747638376713" duration="75000" />
       <workItem from="1748005182156" duration="11960000" />
       <workItem from="1748093026793" duration="98000" />
+      <workItem from="1748780068320" duration="1482000" />
     </task>
     <task id="LOCAL-00001" summary="replace characters">
       <option name="closed" value="true" />
