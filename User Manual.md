@@ -14,75 +14,7 @@ BADAPPLE由南方科技大学多媒体信息处理课程（[CS330 MIP](https://b
 
 有趣的是，BADAPPLE 这个名字以项目的第一个生成视频《白雪公主》中的关键道具“坏苹果”命名，“坏苹果”在《白雪公主》故事中不仅是一个推动情节发展的关键道具，更是一个具有深刻象征意义的元素。这种命名方式代表着《白雪公主》这部作品对项目的重要性以及我们的黑色幽默感(~~如同白雪公主与皇后之间的“识人术”、“社交的手腕”~~)😋，还有对未来小说转视频生成器发展的展望。
 
-### 1.2 BADAPPLE版本说明
-
-了解 BADAPPLE 的新功能🙉！本节总结了每个版本的新功能、改进、已知问题和错误修复。您可以在本部分找到 v2.5.0 之后每个版本的发布说明。我们建议您定期访问此页面以了解更新信息。
-
-#### V 2.5.11
-
-我们很高兴地宣布 BADAPPLE正式发布！该版本引入了强大的新功能，如多分析器功能和扩展的标记符支持（Jieba、Lindera、ICU、Language Identifier）。我们还进行了多项改进，包括动态分段加载线程池更新和优化 binlog 导入过程中的删除过滤。主要的错误修复解决了潜在的段丢失问题、BM25 搜索失败和 JSON 统计过滤错误。
-
-我们建议您升级到 2.5.11，以利用这些改进和修复！
-
-##### 功能
-
-* 增加了为多语言支持配置多个分析器（标记器）的功能，并可根据输入数据的指令选择适当的分析器[（#41444](https://github.com/milvus-io/milvus/pull/41444)）。
-* 增强了 BM25 分析器功能[（#41456](https://github.com/milvus-io/milvus/pull/41456)）。
-
-  * 引入了用于干运行的 `run_analyzer` API，以帮助分析标记化结果。有关详细信息，请参阅[分析器概述](https://milvus.io/docs/zh/analyzer-overview.md)。
-  * 标记化器
-    * 已添加对 Jieba 令牌化器参数定制的支持。
-    * 添加了对 Lindera 令牌化器的支持。有关详细信息，请参阅[Lindera](https://milvus.io/docs/zh/lindera-tokenizer.md)。
-    * 已添加对 ICU 令牌生成器的支持。如需了解更多信息，请参阅[ICU](https://milvus.io/docs/zh/icu-tokenizer.md)。
-    * 已添加用于语言检测的语言标识符标记符。
-  * 过滤器
-    * 扩展了对内置停止词过滤器的语言支持。更多信息，请参阅[停止](https://milvus.io/docs/zh/stop-filter.md)。
-    * 添加了 `remove_punct` 过滤器以移除标点符号。有关更多信息，请参阅[删除标点符号](https://milvus.io/docs/zh/removepunct-filter.md)。
-    * 添加了 `regex` 过滤器，用于基于模式的文本过滤。更多信息，请参阅[Regex](https://milvus.io/docs/zh/regex-filter.md)。
-
-##### 改进
-
-* 启用了对分段加载线程池大小的动态更新[(#41549](https://github.com/milvus-io/milvus/pull/41549))。
-* 在导入 binlog 时加速删除过滤[(#41552](https://github.com/milvus-io/milvus/pull/41552))。
-* 为表达式过滤比率添加了监控参数[（#41403](https://github.com/milvus-io/milvus/pull/41403)）。
-* 添加了一个配置选项，以强制将索引重建为最新版本[(#41432](https://github.com/milvus-io/milvus/pull/41432))。
-* 改进了列表策略的错误日志信息[（#41368](https://github.com/milvus-io/milvus/pull/41368)）。
-* 调整了对 gRPC 元数据头中连字符的处理[（#41372](https://github.com/milvus-io/milvus/pull/41372)）。
-* 将 Go 版本升级至 1.24.1，以解决 CVE 问题[(#41522](https://github.com/milvus-io/milvus/pull/41522),[#41319](https://github.com/milvus-io/milvus/pull/41319))。
-
-##### 错误修复
-
-* 修正了在丢弃分区时可能无法正确丢弃分段的问题[(#41543](https://github.com/milvus-io/milvus/pull/41543))。
-* 修正了批量插入使用函数运行程序的输入字段列表而非 Schema 的字段列表的问题[（#41561](https://github.com/milvus-io/milvus/pull/41561)）。
-* 修正了当 `avgdl` （平均文档长度）为 NaN 时出现的 BM25 搜索失败问题[（#41503](https://github.com/milvus-io/milvus/pull/41503)）。
-* 修正了查询节点指标中不准确的标签[（#41422](https://github.com/milvus-io/milvus/pull/41422)）。
-* 修正了一个问题，即如果数据包含空映射，JSON 统计索引创建可能会失败[（#41506](https://github.com/milvus-io/milvus/pull/41506)）。
-* 修正了 `AlterCollection` API，以正确保存修改时间戳[（#41469](https://github.com/milvus-io/milvus/pull/41469)）。
-* 修正了 `ConjunctExpr` 下 JSON 统计中的间歇性过滤错误，并改进了任务槽计算逻辑，以加快 JSON 统计的构建[(#41458](https://github.com/milvus-io/milvus/pull/41458))。
-* 修正了 BM25 统计计算中的 IDF 甲骨文泄漏问题[(#41426](https://github.com/milvus-io/milvus/pull/41426))。
-* 确保在碎片编号验证过程中首先检查预创建的主题[(#41421](https://github.com/milvus-io/milvus/pull/41421))。
-* 修正了单元测试中出现的错误死锁报告[(#41377](https://github.com/milvus-io/milvus/pull/41377))。
-
-### 1.3 如何贡献
-
-作为一个开源项目，BADAPPLE 的发展离不开社区的贡献。以下是您如何参与我们的旅程。
-
-#### 1.3.1 分享反馈
-
-* 问题报告：遇到错误或有建议？在我们的[GitHub 页面](https://github.com/milvus-io/milvus/issues)上打开一个问题。
-* 功能建议：有关于新功能或改进的想法？加入[我们的讨论主题吧](https://github.com/milvus-io/milvus/discussions/40263)。
-
-#### 1.3.2 代码贡献
-
-* 拉取请求：直接向我们的[代码库](https://github.com/milvus-io/milvus/pulls)投稿。无论是修复错误、添加功能还是改进文档，我们都欢迎您的贡献。
-* 开发指南：查看我们的[用户指南](https://github.com/milvus-io/milvus/blob/82915a9630ab0ff40d7891b97c367ede5726ff7c/CONTRIBUTING.md)，了解代码贡献指南。
-
-#### 1.3.3 传播信息
-
-* 社交分享：喜欢 BADAPPLE 吗？在社交媒体和技术博客上分享您的使用案例和经验。
-* 在 GitHub 上为我们加星：在我们的[GitHub 存储库上](https://github.com/milvus-io/milvus)加星，表示您对我们的支持。
-
-### 1.4 系统设计
+### 1.2 系统设计
 
 BADAPPLE的项目核心围绕“文本、图像、语音、视频”四大模块展开，最终生成完整的动漫化短视频。
 
@@ -93,7 +25,7 @@ BADAPPLE的项目核心围绕“文本、图像、语音、视频”四大模块
 
 <img src="markdown_image\System_Design.png" alt="System Design">
 
-### 1.5 用户界面
+### 1.3 用户界面
 
 下图为BADAPPLE的用户界面概念图，这张图片展示了多领域交互界面的概念设计。界面分为四个主要部分：文本域、图像域、音频域和视频域。每个部分都有特定的输入和生成选项。文本域允许用户输入不同的场景和提示词；图像域让用户设置采样步数和其他参数来生成图像；音频域支持文本转语音合成；视频域则整合了帧率、特效和容器格式等设置，最终生成完整的视频输出。BADAPPLE界面旨在提供一个综合性的创作平台，方便用户在不同媒体形式之间无缝转换和生成内容。
 
